@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include "rpath.h"
 /* define the element structure for history stack */
 
 typedef struct NODE
@@ -35,6 +36,41 @@ typedef struct STACK
 	Node *head;
 	pthread_rwlock_t s_lock;
 } stack;
+
+/*
+ * make a history stack node
+ */
+Node* make_node(char *dname)
+{
+	Node* temp;
+	DIR *dir;
+	char* rptr,*memptr;
+
+	errno=0;
+	if((dir=opendir(dname))==NULL)
+	{
+		perror("Opendir");
+		return NULL;
+	}
+	if ((rptr = get_realpath(dname,&memptr))==NULL)
+	{
+		perror("realpath");
+		if (memptr)
+			free(memptr);
+		return NULL;
+	}
+
+	if ((temp=(Node*)malloc(sizeof(Node)))==NULL)
+	{
+		perror("malloc()");
+		return NULL;
+	}
+	temp->counter=1;
+	temp->dir=dir;
+	temp->path=memptr;
+	temp->prev=NULL;
+	return temp;
+}
 
 /*
  * Initialize a stack

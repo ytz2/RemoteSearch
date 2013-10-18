@@ -134,8 +134,12 @@ Node* stack_find_history(stack *st,Node* current,char *path)
 /*
  * recursively walk the directory
  */
-int walk_recur(char* dname, int depth)
+int walk_recur(char* dname, int depth,Node* current)
 {
+	struct dirent dent;
+	DIR *dir;
+	struct stat st;
+	Node *next;
 
 }
 
