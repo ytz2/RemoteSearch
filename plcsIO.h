@@ -6,6 +6,9 @@
  *  This Header files defines function utilities
  *  to implement IO reading & printing functions
  *  used in plcs
+ *
+ *  History:
+ *  1. the get_realpath function is moved to rpath.h
  */
 
 #ifndef PLCSIO_H_
@@ -20,6 +23,7 @@
 #include "command_util.h"
 #include "str_search.h"
 #include "global.h"
+#include "rpath.h"
 
 /*
  * search_str is a wrapper function wraps the options searches
@@ -36,11 +40,7 @@ int search_str(char* buffer, char* search_str);
  */
 void print_line(int lineno, char* realpath, char* str);
 
-/*
- * get_realpath
- * return the realpath of a file
- */
-char* get_realpath(char* filename, char** memptr);
+
 
 /*
  * search_stream

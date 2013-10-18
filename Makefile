@@ -13,8 +13,8 @@ else
 endif
 
 
-all: plcs.o plcsIO.o command_util.o str_search.o ospenv.h
-	$(CC) $(CFLAGS)  plcs.o plcsIO.o command_util.o str_search.o -o plcs
+all: plcs.o plcsIO.o command_util.o str_search.o rpath.o ospenv.h
+	$(CC) $(CFLAGS)  plcs.o plcsIO.o command_util.o rpath.o str_search.o -o plcs
 
 plcs.o: plcs.c global.h  str_search.h command_util.h ospenv.h
 	$(CC) $(CFLAGS) -c plcs.c
@@ -25,7 +25,10 @@ plcsIO.o: plcsIO.h plcsIO.c  global.h str_search.h ospenv.h
 command_util.o: command_util.h command_util.c ospenv.h
 	$(CC) $(CFLAGS) -c command_util.c
 
-str_search.o:  str_search.h str_search.c ospenv.h
+rpath.o: rpath.h rpath.c 
+	$(CC) $(CFLAGS) -c rpath.c
+
+str_search.o:  str_search.h str_search.c ospenv.h rpath.h
 	$(CC) $(CFLAGS) -c str_search.c
 
 clean:

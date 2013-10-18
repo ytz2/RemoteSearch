@@ -70,40 +70,7 @@ void print_line(int lineno, char* realpath, char* str) {
 		printf("%s%s%s\n", temp1, temp2, str);
 }/*print_line*/
 
-/*
- * get_realpath
- * return the realpath of a file
- * comparing with the example given in course
- * the memptr is provided outside
- * the memptr must be checked outside to free!!!
- */
-char* get_realpath(char* filename,char **memptr) {
-	int path_max;
-	char *realptr;
-	realptr = NULL;
 
-#if defined(PATH_MAX) && PATH_MAX != -1
-	path_max = PATH_MAX;
-#else
-	errno = 0;
-	if ((path_max = pathconf(filename, _PC_PATH_MAX)) == -1) {
-		if (errno != 0)
-			perror(filename);
-		/* error or unlimited, pick a big number */
-		path_max = 8192;
-	}
-#endif
-	*memptr = (char*) malloc(path_max);
-	if (*memptr == NULL )
-		fprintf(stderr, "malloc(): %s %s", strerror(errno), filename);
-	else {
-		realptr = realpath(filename, *memptr);
-		if (realptr == NULL ) {
-			fprintf(stderr, "%s %s", filename, strerror(errno));
-		}
-	}
-	return realptr;
-}/*get_realpath*/
 
 /*
  * search_stream
