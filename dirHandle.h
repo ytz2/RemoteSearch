@@ -40,37 +40,8 @@ typedef struct STACK
 /*
  * make a history stack node
  */
-Node* make_node(char *dname)
-{
-	Node* temp;
-	DIR *dir;
-	char* rptr,*memptr;
 
-	errno=0;
-	if((dir=opendir(dname))==NULL)
-	{
-		perror("Opendir");
-		return NULL;
-	}
-	if ((rptr = get_realpath(dname,&memptr))==NULL)
-	{
-		perror("realpath");
-		if (memptr)
-			free(memptr);
-		return NULL;
-	}
-
-	if ((temp=(Node*)malloc(sizeof(Node)))==NULL)
-	{
-		perror("malloc()");
-		return NULL;
-	}
-	temp->counter=1;
-	temp->dir=dir;
-	temp->path=memptr;
-	temp->prev=NULL;
-	return temp;
-}
+Node* make_node(char *dname);
 
 /*
  * Initialize a stack
@@ -97,5 +68,7 @@ Node* stack_find_history(stack *st,Node* current,char *path);
 /*
  * recursively walk the directory
  */
-int walk_recur(char* dname, int depth);
+
+int walk_recur(int depth,stack *stk,Node* current);
+
 #endif /* DIRHANDLE_H_ */

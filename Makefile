@@ -16,6 +16,12 @@ endif
 all: plcs.o plcsIO.o command_util.o str_search.o rpath.o ospenv.h
 	$(CC) $(CFLAGS)  plcs.o plcsIO.o command_util.o rpath.o str_search.o -o plcs
 
+test: dirHandle.o rpath.o
+	$(CC) $(CFLAGS) -lpthread dirHandle.o rpath.o -o test
+
+dirHandle.o:  ospenv.h rpath.h
+	$(CC) $(CFLAGS) -c dirHandle.c
+
 plcs.o: plcs.c global.h  str_search.h command_util.h ospenv.h
 	$(CC) $(CFLAGS) -c plcs.c
 
