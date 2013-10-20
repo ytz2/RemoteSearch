@@ -23,6 +23,11 @@
 #include "rpath.h"
 /* define the element structure for history stack */
 
+#define MAX_DEPTH 10
+#define dot_no_access 1
+#define not_follow_link 0
+#define no_err_msg 0
+
 typedef struct NODE
 {
 	unsigned long counter; // counter of reference to itself
@@ -35,18 +40,37 @@ typedef struct STACK
 {
 	Node *head;
 	pthread_rwlock_t s_lock;
+	pthread_attr_t attr;
 } stack;
 
+typedef struct THREAD_PARA
+{
+	int depth;
+	Node* current;
+	stack* stk;
+} Para;
 /*
  * make a history stack node
  */
 
 Node* make_node(char *dname);
 
+
+/*
+ * do some housekeeping about a node
+ */
+void clear_node(Node* node);
+
 /*
  * Initialize a stack
  */
 int stack_init(stack *st);
+
+/*
+ * destroy the stack
+ */
+
+int stack_destroy(stack *st);
 
 /*
  * push a node on the "top" of the tree-like stack
@@ -69,6 +93,29 @@ Node* stack_find_history(stack *st,Node* current,char *path);
  * recursively walk the directory
  */
 
+
+/*
+ * get the full path from the realpath and d_name
+ */
+char* get_fullpath(char* rpath,char *fname);
+/*
+ * Walk through a dir with the help of history stack
+ * from the given node
+ * Depth: depth of current dir relative to start
+ * stk: history stack
+ * current: the current node
+ */
 int walk_recur(int depth,stack *stk,Node* current);
 
+/*
+ * test if the symlink pointing to a dir
+ * if it is, return bool 1
+ * else false 0
+ */
+int is_sym_dir(char* full_name);
+
+/*
+ * wrapper function for directory search
+ */
+void* search_dir(void *para);
 #endif /* DIRHANDLE_H_ */

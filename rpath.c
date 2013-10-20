@@ -11,7 +11,7 @@
 
 
 /*
- * This is function in Steven's book page 50
+ * This is edited version of the function in Steven's book page 50
  * it returns the allocated buffer and the allocated
  * buffer size in bytes
  */
@@ -68,11 +68,11 @@ char* get_realpath(char* filename,char **memptr) {
 	realptr = NULL;
 
 	if ((*memptr=path_alloc(NULL))==NULL )
-		fprintf(stderr, "malloc(): %s %s", strerror(errno), filename);
+		fprintf(stderr, "malloc(): %s %s\n", strerror(errno), filename);
 	else {
 		realptr = realpath(filename, *memptr);
 		if (realptr == NULL ) {
-			fprintf(stderr, "%s %s", filename, strerror(errno));
+			fprintf(stderr, "%s: %s\n", filename, strerror(errno));
 		}
 	}
 	return realptr;
