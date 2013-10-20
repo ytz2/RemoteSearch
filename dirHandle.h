@@ -28,12 +28,15 @@
 #define not_follow_link 0
 #define no_err_msg 0
 
+typedef struct STACK stack;
 typedef struct NODE
 {
 	unsigned long counter; // counter of reference to itself
 	char *path; //realpath
 	DIR *dir; //the dir object
 	struct NODE *prev; // link to its previous node
+	int depth;
+	stack *stk;
 } Node;
 
 typedef struct STACK
@@ -43,17 +46,10 @@ typedef struct STACK
 	pthread_attr_t attr;
 } stack;
 
-typedef struct THREAD_PARA
-{
-	int depth;
-	Node* current;
-	stack* stk;
-} Para;
 /*
  * make a history stack node
  */
-
-Node* make_node(char *dname);
+Node* make_node(char *dname,int depth,stack *stk);
 
 
 /*
@@ -98,14 +94,11 @@ Node* stack_find_history(stack *st,Node* current,char *path);
  * get the full path from the realpath and d_name
  */
 char* get_fullpath(char* rpath,char *fname);
+
 /*
- * Walk through a dir with the help of history stack
- * from the given node
- * Depth: depth of current dir relative to start
- * stk: history stack
- * current: the current node
+ * Walk through a dir from the current node
  */
-int walk_recur(int depth,stack *stk,Node* current);
+int walk_recur(Node* current);
 
 /*
  * test if the symlink pointing to a dir

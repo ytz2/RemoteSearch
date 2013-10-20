@@ -25,7 +25,7 @@ void dbg(const char* func, const char* path, int count)
 /*
  * make a history stack node
  */
-Node* make_node(char *dname)
+Node* make_node(char *dname,int depth,stack *stk)
 {
 	Node* temp;
 	DIR *dir;
@@ -64,6 +64,8 @@ Node* make_node(char *dname)
 	temp->dir=dir; // the dir object about the path
 	temp->path=memptr; // realpath of the dir
 	temp->prev=NULL; // will be pointed to its parent dir
+	temp->depth=depth;
+	temp->stk=stk;
 	return temp;
 }
 
@@ -107,6 +109,8 @@ int stack_destroy(stack *st)
 {
 	int err;
 	if((err=pthread_attr_destroy(&st->attr))!=0)
+		return err;
+	if ((err=pthread_rwlock_destroy(&st->s_lock))!=0)
 		return err;
 	return 0;
 }
@@ -284,7 +288,7 @@ int is_sym_dir(char* full_name)
  * recursively walk the directory
  */
 
-int walk_recur(int depth,stack *stk,Node* current)
+int walk_recur(Node* current)
 {
 
 	DIR *dir;
@@ -292,12 +296,15 @@ int walk_recur(int depth,stack *stk,Node* current)
 	struct dirent entry;
 	struct dirent *result;
 	struct stat st;
-	Para *para;
 	int err;
 	Node *next;
 	Node *prev;
 	pthread_t id;
 	int sym_link_flag;
+	int depth;
+	stack *stk;
+	depth=current->depth;
+	stk=current->stk;
 
 	printf("%*s: thread id: %lu\n",3*depth+(int)strlen(current->path),current->path,pthread_self());
 
@@ -359,7 +366,7 @@ int walk_recur(int depth,stack *stk,Node* current)
 		if (depth<MAX_DEPTH && (S_ISDIR(st.st_mode)||sym_link_flag==1))
 		{
 			/* make a node contains info */
-			if ((next=make_node(full_path))==NULL)
+			if ((next=make_node(full_path,depth+1,stk))==NULL)
 			{
 				free(full_path);
 				continue;
@@ -376,17 +383,10 @@ int walk_recur(int depth,stack *stk,Node* current)
 			/* push the next node to the stack on the top of current node*/
 			stack_push(stk,current, next);
 			/* recursively search */
-			para=(Para*)malloc(sizeof(Para));
-			para->current=next;
-			para->depth=depth+1;
-			para->stk=stk;
 
 			int err;
-			if ((err=pthread_create(&id,&stk->attr,search_dir,(void*)para))!=0)
-				walk_recur(depth+1, stk, next);
-			if (err)
-				free(para);
-			//walk_recur(depth+1, stk, next);
+			if ((err=pthread_create(&id,&stk->attr,search_dir,(void*)next))!=0)
+				walk_recur(next);
 		}
 		free(full_path);
 	}
@@ -401,35 +401,27 @@ int walk_recur(int depth,stack *stk,Node* current)
 void* search_dir(void *para)
 {
 	long err=0;
-	Para *temp=(Para*)para;
-	int depth=temp->depth;
-	Node *current=temp->current;
-	stack *stk=temp->stk;
-	err=walk_recur(depth,stk,current);
+	err=walk_recur((Node*)para);
 	return (void*)err;
 }
 
 
 int main(int argc, char *argv[])
 {
+	stack Stack;
 	pthread_t id;
-	stack st;
 	struct stat info;
-	Para para;
 	printf("within thread %lu\n",pthread_self());
-	stack_init(&st);
+	stack_init(&Stack);
 	Node *current;
 	lstat(argv[1],&info);
 	if (S_ISLNK(info.st_mode))
 		printf("This is symlink\n");
-	current=make_node(argv[1]);
-	stack_push(&st,current, NULL);
-	para.current=current;
-	para.depth=1;
-	para.stk=&st;
-	pthread_create(&id,&st.attr,search_dir,(void*)&para);
+	current=make_node(argv[1],1,&Stack);
+	stack_push(&Stack,current, NULL);
+	pthread_create(&id,&Stack.attr,search_dir,(void*)current);
 	//walk_recur(1,&st,current);
-	stack_destroy(&st);
+	stack_destroy(&Stack);
 
 	pthread_exit(0);
 }
