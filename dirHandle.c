@@ -198,6 +198,7 @@ Node* stack_find_history(stack *st, Node* current, char *path) {
 		return NULL ;
 	}
 
+	/* loop to find whether a given path in the history stack */
 	for (temp = current; temp != NULL ; temp = temp->prev) {
 		if (strcmp(temp->path, path) == 0)
 			break;
@@ -388,34 +389,42 @@ void* search_dir(void *para) {
 	Node* temp;
 	long err = 0;
 	temp = (Node*) para;
-	if ((err = pthread_rwlock_wrlock(&temp->stk->s_lock)) != 0) {
+	/*
+	 * I have to remember the lock & stk here, since once the node get free
+	 * I will have no chance to come back, a more elegant way may exist
+	 */
+	stack *stk=temp->stk;
+	pthread_rwlock_t *lock=&temp->stk->s_lock;
+
+	if ((err = pthread_rwlock_wrlock(lock)) != 0) {
 		if (!no_err_msg)
 			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
 	}
 	/*
 	 * increment the alive thread counts
 	 */
-	temp->stk->thread_counts++;
+	stk->thread_counts++;
 
-	if ((err = pthread_rwlock_unlock(&temp->stk->s_lock)) != 0) {
+	if ((err = pthread_rwlock_unlock(lock)) != 0) {
 		if (!no_err_msg)
 			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 	}
 
 	err = walk_recur((Node*) para);
-	if ((err = pthread_rwlock_wrlock(&temp->stk->s_lock)) != 0) {
+	  //	dbg(__func__,temp->path,__LINE__);
+	if ((err = pthread_rwlock_wrlock(lock)) != 0) {
 		if (!no_err_msg)
 			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
 	}
 	/*decrement the thread counts if detached*/
-	temp->stk->thread_counts--;
+	  stk->thread_counts--;
 
-	if ((err = pthread_rwlock_unlock(&temp->stk->s_lock)) != 0) {
-		if (!no_err_msg)
-			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
+	  if ((err = pthread_rwlock_unlock(lock)) != 0) {
+	    if (!no_err_msg)
+	      fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 	}
 	fflush(stderr);
-	return (void*) err;
+	pthread_exit((void*) err);
 }
 /*
  * another wrapper function, it will
@@ -426,7 +435,6 @@ void* search_dir(void *para) {
 int walk_to_next(Node* next) {
 	pthread_t id; // thread id
 	int err;
-
 	/*if the thread number limit is 0, use main thread*/
 	if (thread_limits == 0) {
 		walk_recur(next);
@@ -456,20 +464,23 @@ int walk_to_next(Node* next) {
 		err = walk_recur(next);
 	return err;
 }
+stack Stack;
 int main(int argc, char *argv[]) {
-	stack Stack;
-	struct stat info;
+
+  //	struct stat info;
 	stack_init(&Stack);
 	Node *current;
-	lstat(argv[1], &info);
-	if (S_ISLNK(info.st_mode))
-		printf("This is symlink\n");
-	current = make_node(argv[1], 1, &Stack);
+	//	lstat(argv[1], &info);
+	//if (S_ISLNK(info.st_mode))
+	//	printf("This is symlink\n");
+	current = make_node(".", 1, &Stack);
+	if(current==NULL)
+	  dbg(__func__,"make node",__LINE__);
 	stack_push(&Stack, current, NULL );
 	walk_to_next(current);
 	//walk_recur(1,&st,current);
-	stack_destroy(&Stack);
-
+	//stack_destroy(&Stack);
+	//sleep(5);
 	pthread_exit(0);
 }
 

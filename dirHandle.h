@@ -23,11 +23,11 @@
 #include "rpath.h"
 /* define the element structure for history stack */
 
-#define MAX_DEPTH 10
+#define MAX_DEPTH 6
 #define dot_no_access 1
 #define not_follow_link 0
 #define no_err_msg 0
-#define thread_limits 2
+#define thread_limits 3
 
 typedef struct STACK stack; //pre declaration
 typedef struct NODE {
@@ -43,12 +43,12 @@ typedef struct NODE {
  * the stack type is made independent of Node
  * in order to provide a better interface
  */
-typedef struct STACK {
+struct STACK {
 	Node *head;
 	pthread_rwlock_t s_lock;
 	pthread_attr_t attr;
 	long thread_counts;
-} stack;
+};
 
 /*
  * make a history stack node
