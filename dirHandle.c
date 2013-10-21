@@ -16,7 +16,7 @@
  * leave here for assignment 3, no use in current project
  * and leave it here.
  */
-void dbg(const char* func, const char* path, int count) {
+static void dbg(const char* func, const char* path, int count) {
 	fprintf(stderr, "%s: %s is %d \n", func, path, count);
 	fflush(stderr);
 }
@@ -465,7 +465,8 @@ int walk_to_next(Node* next) {
 	return err;
 }
 stack Stack;
-int main(int argc, char *argv[]) {
+
+int main(void) {
 
   //	struct stat info;
 	stack_init(&Stack);
@@ -483,4 +484,3 @@ int main(int argc, char *argv[]) {
 	//sleep(5);
 	pthread_exit(0);
 }
-
