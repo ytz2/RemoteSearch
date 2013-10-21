@@ -12,7 +12,7 @@
 /*
  * debuging purpose
  * usage: dbg(__func__,msg,__LINE__)
- *        or dbg(__func__,node->counter,node->path)
+ *        or dbg(__func__,node->path,node->counter)
  * leave here for assignment 3, no use in current project
  * and leave it here.
  */
@@ -444,7 +444,7 @@ int walk_to_next(Node* next) {
 		/*
 		 * spawn a thread, if cannot create a thread, issue
 		 * an error message and let the parent thread do the "left" recursion
-		 * however, when it is availabe, always use a new thread
+		 * however, when it is available, always use a new thread
 		 */
 		err = pthread_create(&id, &next->stk->attr, search_dir, (void*) next);
 		if (err != 0 && !no_err_msg)
