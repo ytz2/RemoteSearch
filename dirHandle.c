@@ -117,7 +117,7 @@ int stack_push(stack *st, Node *current, Node *next) {
 	int err;
 	if ((err = pthread_rwlock_wrlock(&st->s_lock)) != 0) {
 		if (!no_err_msg)
-			fprintf(stderr, "rwlock_wrlock: %s", strerror(err));
+			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
 		return err;
 	}
 
@@ -136,7 +136,7 @@ int stack_push(stack *st, Node *current, Node *next) {
 
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
 		if (!no_err_msg)
-			fprintf(stderr, "rwlock_unlock: %s", strerror(err));
+			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 		return err;
 	}
 
@@ -152,7 +152,7 @@ int stack_job_done(stack *st, Node *current) {
 	temp = current;
 	if ((err = pthread_rwlock_wrlock(&st->s_lock)) != 0) {
 		if (!no_err_msg)
-			fprintf(stderr, "rwlock_wrlock: %s", strerror(err));
+			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
 		return err;
 	}
 	// decrement the leaf counter
@@ -180,7 +180,7 @@ int stack_job_done(stack *st, Node *current) {
 
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
 		if (!no_err_msg)
-			fprintf(stderr, "rwlock_unlock: %s", strerror(err));
+			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 		return err;
 	}
 	return 0;
@@ -194,7 +194,7 @@ Node* stack_find_history(stack *st, Node* current, char *path) {
 	Node *temp;
 	if ((err = pthread_rwlock_rdlock(&st->s_lock)) != 0) {
 		if (!no_err_msg)
-			fprintf(stderr, "rwlock_rdlock: %s", strerror(err));
+			fprintf(stderr, "rwlock_rdlock: %s\n", strerror(err));
 		return NULL ;
 	}
 
@@ -205,7 +205,7 @@ Node* stack_find_history(stack *st, Node* current, char *path) {
 
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
 		if (!no_err_msg)
-			fprintf(stderr, "rwlock_unlock: %s", strerror(err));
+			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 		return NULL ;
 	}
 	return temp;
@@ -295,7 +295,10 @@ int walk_recur(Node* current) {
 		if (dot_no_access && result->d_name[0] == '.')
 			continue;
 
-		/* generate the full path of subdirectory or files */
+		/* generate the full path of subdirectory or files
+		 * hmmm don't forget to free full_path when any condition
+		 * cause to neglect one step
+		 */
 		full_path = get_fullpath(current_path, result->d_name);
 
 		/* get the stat info of subdir/file*/
@@ -326,6 +329,15 @@ int walk_recur(Node* current) {
 			}
 		}
 
+		if (depth == MAX_DEPTH && (S_ISDIR(st.st_mode) || sym_link_flag == 1)) {
+			if (!no_err_msg) {
+				fprintf(stderr,
+						"%s is detected to exceed the search limit %d\n",
+						full_path, MAX_DEPTH);
+			}
+			free(full_path);
+			continue;
+		}
 		/* if it is the directory or symlink to a directory */
 		if (depth < MAX_DEPTH && (S_ISDIR(st.st_mode) || sym_link_flag == 1)) {
 			/* make a node contains info */
@@ -339,6 +351,10 @@ int walk_recur(Node* current) {
 				if (!no_err_msg) {
 					fprintf(stderr, "%s is detected to cause a loop\n",
 							full_path);
+					/*
+					 * go back to print all the loop elements in the loop branch
+					 * in the history stack
+					 */
 					for (temp = current; temp != prev->prev; temp =
 							temp->prev) {
 						fprintf(stderr, "%*s\n",
@@ -358,6 +374,7 @@ int walk_recur(Node* current) {
 			walk_to_next(next);
 		}
 		free(full_path);
+		fflush(stderr);
 	}
 	stack_job_done(stk, current);
 	/* now list the dir */
@@ -373,7 +390,7 @@ void* search_dir(void *para) {
 	temp = (Node*) para;
 	if ((err = pthread_rwlock_wrlock(&temp->stk->s_lock)) != 0) {
 		if (!no_err_msg)
-			fprintf(stderr, "rwlock_wrlock: %s", strerror(err));
+			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
 	}
 	/*
 	 * increment the alive thread counts
@@ -382,21 +399,22 @@ void* search_dir(void *para) {
 
 	if ((err = pthread_rwlock_unlock(&temp->stk->s_lock)) != 0) {
 		if (!no_err_msg)
-			fprintf(stderr, "rwlock_unlock: %s", strerror(err));
+			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 	}
 
 	err = walk_recur((Node*) para);
 	if ((err = pthread_rwlock_wrlock(&temp->stk->s_lock)) != 0) {
 		if (!no_err_msg)
-			fprintf(stderr, "rwlock_wrlock: %s", strerror(err));
+			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
 	}
 	/*decrement the thread counts if detached*/
 	temp->stk->thread_counts--;
 
 	if ((err = pthread_rwlock_unlock(&temp->stk->s_lock)) != 0) {
 		if (!no_err_msg)
-			fprintf(stderr, "rwlock_unlock: %s", strerror(err));
+			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 	}
+	fflush(stderr);
 	return (void*) err;
 }
 /*
@@ -405,32 +423,37 @@ void* search_dir(void *para) {
  * number is less than the limit, then do thread_create
  * else, use walk_recur
  */
-int walk_to_next(Node* next)
-{
+int walk_to_next(Node* next) {
 	pthread_t id; // thread id
 	int err;
 
 	/*if the thread number limit is 0, use main thread*/
-	if(thread_limits==0)
-	{
+	if (thread_limits == 0) {
 		walk_recur(next);
-		dbg(__func__,"test:",__LINE__);
 		return 0;
 	}
 	/*use wrlock to exclude other thread create thread
 	 * because it will check the alive thread number
 	 */
 	pthread_rwlock_wrlock(&next->stk->s_lock);
-	err=0;
+	err = 0;
 	/* the threads number is enough, cannot create a thread*/
-	if (next->stk->thread_counts>=thread_limits && thread_limits>=0)
-		err=1;
-	else
+	if (next->stk->thread_counts >= thread_limits && thread_limits >= 0)
+		err = 1;
+	else {
+		/*
+		 * spawn a thread, if cannot create a thread, issue
+		 * an error message and let the parent thread do the "left" recursion
+		 * however, when it is availabe, always use a new thread
+		 */
 		err = pthread_create(&id, &next->stk->attr, search_dir, (void*) next);
+		if (err != 0 && !no_err_msg)
+			fprintf(stderr, "pthread_create: %s\n", strerror(err));
+	}
 	pthread_rwlock_unlock(&next->stk->s_lock);
 	/* if the thread creation fails, use parent thread*/
-	if (err!=0)
-		err=walk_recur(next);
+	if (err != 0)
+		err = walk_recur(next);
 	return err;
 }
 int main(int argc, char *argv[]) {

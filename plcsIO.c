@@ -68,6 +68,7 @@ void print_line(int lineno, char* realpath, char* str) {
 		printf("%s%s%*d: %s\n", temp1, temp2, column_number, lineno, str);
 	else
 		printf("%s%s%s\n", temp1, temp2, str);
+	fflush(stdout);
 }/*print_line*/
 
 

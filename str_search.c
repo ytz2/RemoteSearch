@@ -7,7 +7,7 @@
  *  History:
  *	1 Use the strncasecmp function in <strings.h> to optimize
  *	the cmp_char_arr function backbone
- *  2 Change the defintion of last in bm_search from char to
+ *  2 Change the declaration of last in bm_search from char to
  *  unsigned char
  */
 
