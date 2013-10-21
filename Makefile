@@ -9,7 +9,7 @@ CC=gcc
 ifeq ($ (OSTYPE),solaris)
 	CFLAGS= -Wall -O -g
 else
-	CFLAGS=  -Wall  -g -Wextra
+	CFLAGS=  -Wall -O -g -Wextra
 endif
 
 
