@@ -21,13 +21,9 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include "rpath.h"
-
-
-#define MAX_DEPTH 8
-#define dot_no_access 1
-#define not_follow_link 1
-#define no_err_msg 0
-#define thread_limits 5
+#include "global.h"
+#include "command_util.h"
+#include "plcsIO.h"
 
 /* define the element structure for history stack */
 typedef struct STACK stack; //pre declaration

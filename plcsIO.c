@@ -11,6 +11,10 @@
  *  1 Corrected the maximum line no bug definition
  *  2 Do not print line number if -n is not set
  *  3 Add a space to the realpath
+ *
+ *  HW2:
+ *  1 make the any_line_buffer to be thread local storage
+ *
  */
 
 #include "plcsIO.h"
@@ -71,6 +75,21 @@ void print_line(int lineno, char* realpath, char* str) {
 	fflush(stdout);
 }/*print_line*/
 
+/*
+ * function to create the key
+ */
+static pthread_key_t line_buffer_key; // key to bind a line buffer
+static pthread_once_t init_done=PTHREAD_ONCE_INIT; // once key
+void thread_init()
+{
+	pthread_key_create(&line_buffer_key,free);
+	char *any_line_buffer; /* buffer to store lines no matter what*/
+	/* allocate memory to buffer*/
+	if ((any_line_buffer = (char*) malloc(line_buffer_size + 1)) == NULL) {
+		perror("Memory Allocation to Line Buffer\n");
+	}
+	pthread_setspecific(line_buffer_key,any_line_buffer);
+}
 
 
 /*
@@ -83,11 +102,18 @@ void print_line(int lineno, char* realpath, char* str) {
 void search_stream(FILE *fptr, char* filename, char* objstr) {
 	int lineno;
 	int output_lineno;
-	char* rptr, *memptr;
+	char* rptr, *memptr,*any_line_buffer;
 	/*initialize the rptr*/
 	rptr = NULL;
 	memptr=NULL;
 	output_lineno=1;
+
+	/*
+	 * create the key
+	 */
+	pthread_once(&init_done,thread_init);
+	any_line_buffer=pthread_getspecific(line_buffer_key);
+
 	/*
 	 * check if it is stdin, if not and show_path is set
 	 * get the realpath for printing purpose
@@ -122,3 +148,21 @@ void search_stream(FILE *fptr, char* filename, char* objstr) {
 	/*reset the stream for further redirection*/
 	rewind(fptr);
 }/*search_stream*/
+
+/*
+ * search_file
+ * accept a filename and a search string to perform a search
+ * but add another flag to indicate it is in sub directory
+ * tow work well with -q
+ */
+void search_file(char* filename, char *search_str,int flag)
+{
+	FILE *fptr;
+	if ((fptr = fopen(filename, "r")) == NULL) {
+		if(flag==0 || (flag==1 && !(options_flags&NO_ERR_MSG)))
+		perror(filename);
+	} else {
+		search_stream(fptr, filename, search_str);
+		fclose(fptr);
+	}
+}

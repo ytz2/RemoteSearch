@@ -13,20 +13,17 @@ else
 endif
 
 
-all: plcs.o plcsIO.o command_util.o str_search.o rpath.o ospenv.h
-	$(CC) $(CFLAGS)  plcs.o plcsIO.o command_util.o rpath.o str_search.o -o plcs
+all: plcs.o plcsIO.o command_util.o str_search.o rpath.o ospenv.h dirHandle.o
+	$(CC) $(CFLAGS)   plcs.o plcsIO.o command_util.o rpath.o str_search.o dirHandle.o -o plcs
 
-test: dirHandle.o rpath.o
-	$(CC) $(CFLAGS) -lpthread dirHandle.o rpath.o -o test
-
-dirHandle.o:  ospenv.h rpath.h
+dirHandle.o:  ospenv.h rpath.h dirHandle.h global.h
 	$(CC) $(CFLAGS) -c dirHandle.c
 
 plcs.o: plcs.c global.h  str_search.h command_util.h ospenv.h
 	$(CC) $(CFLAGS) -c plcs.c
 
 plcsIO.o: plcsIO.h plcsIO.c  global.h str_search.h ospenv.h
-	$(CC) $(CFLAGS) -c plcsIO.c	
+	$(CC) $(CFLAGS)  -c plcsIO.c	
 
 command_util.o: command_util.h command_util.c ospenv.h
 	$(CC) $(CFLAGS) -c command_util.c
@@ -35,7 +32,7 @@ rpath.o: rpath.h rpath.c
 	$(CC) $(CFLAGS) -c rpath.c
 
 str_search.o:  str_search.h str_search.c ospenv.h rpath.h
-	$(CC) $(CFLAGS) -c str_search.c
+	$(CC) $(CFLAGS) -c  str_search.c
 
 clean:
 	rm -rf *.o *~

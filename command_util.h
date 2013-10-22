@@ -17,13 +17,17 @@
 #include <string.h>
 /* predefine parameters to work with getopt interface*/
 
-#define OPTIONS ":hbeipvl:m:n:"
+#define OPTIONS ":hbeipvafql:m:n:d:t:"
 #define WHITE_SPACE " \n\r\t\v\f"
 #define AT_BEGIN            0x0001  /* -b switch */
 #define AT_END              0x0002  /* -e switch */
 #define CASE_SENSITIVE	    0x0004  /* -i switch */
 #define SHOW_PATH           0x0008  /* -p switch */
 #define INVERSE_PRINT       0x0010  /* -v default is */
+#define DOT_ACCESS           0x0020  /* -a switch */
+#define NOT_FOLLOW_LINK     0x0040  /* -f switch */
+#define NO_ERR_MSG          0x0080  /* -q switch */
+
 /* magic number definition */
 #define DEFAULT_LINE_BUFFER 255
 #define MAX_LINE_BUFFER     4096

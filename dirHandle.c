@@ -16,10 +16,13 @@
  * leave here for assignment 3, no use in current project
  * and leave it here.
  */
-static void dbg(const char* func, const char* path, int count) {
+
+/*static void dbg(const char* func, const char* path, int count) {
 	fprintf(stderr, "%s: %s is %d \n", func, path, count);
 	fflush(stderr);
-}
+}*/
+
+
 /*
  * make a history stack node
  */
@@ -40,14 +43,14 @@ Node* make_node(char *dname, int depth, stack *stk) {
 
 	/* open the direcotry with full path */
 	if ((dir = opendir(rptr)) == NULL ) {
-		if (!no_err_msg)
+		if (!(options_flags&NO_ERR_MSG))
 			perror(rptr);
 		return NULL ;
 	}
 
 	/* give space to a node */
 	if ((temp = (Node*) malloc(sizeof(Node))) == NULL ) {
-		if (!no_err_msg)
+		if (!(options_flags&NO_ERR_MSG))
 			perror("malloc()");
 		return NULL ;
 	}
@@ -116,7 +119,7 @@ int stack_push(stack *st, Node *current, Node *next) {
 
 	int err;
 	if ((err = pthread_rwlock_wrlock(&st->s_lock)) != 0) {
-		if (!no_err_msg)
+		if (!(options_flags&NO_ERR_MSG))
 			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
 		return err;
 	}
@@ -135,7 +138,7 @@ int stack_push(stack *st, Node *current, Node *next) {
 	}
 
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
-		if (!no_err_msg)
+		if (!(options_flags&NO_ERR_MSG))
 			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 		return err;
 	}
@@ -151,7 +154,7 @@ int stack_job_done(stack *st, Node *current) {
 	Node *temp, *tofree;
 	temp = current;
 	if ((err = pthread_rwlock_wrlock(&st->s_lock)) != 0) {
-		if (!no_err_msg)
+		if (!(options_flags&NO_ERR_MSG))
 			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
 		return err;
 	}
@@ -179,7 +182,7 @@ int stack_job_done(stack *st, Node *current) {
 	}
 
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
-		if (!no_err_msg)
+		if (!(options_flags&NO_ERR_MSG))
 			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 		return err;
 	}
@@ -193,7 +196,7 @@ Node* stack_find_history(stack *st, Node* current, char *path) {
 	int err;
 	Node *temp;
 	if ((err = pthread_rwlock_rdlock(&st->s_lock)) != 0) {
-		if (!no_err_msg)
+		if (!(options_flags&NO_ERR_MSG))
 			fprintf(stderr, "rwlock_rdlock: %s\n", strerror(err));
 		return NULL ;
 	}
@@ -205,7 +208,7 @@ Node* stack_find_history(stack *st, Node* current, char *path) {
 	}
 
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
-		if (!no_err_msg)
+		if (!(options_flags&NO_ERR_MSG))
 			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 		return NULL ;
 	}
@@ -246,7 +249,7 @@ int is_sym_dir(char* full_name) {
 	 */
 	if (stat(full_name, &st) == -1) {
 		/* if the link does not exist, issue error*/
-		if (!no_err_msg)
+		if (!(options_flags&NO_ERR_MSG))
 			perror(full_name);
 		val = -1;
 	} else if (S_ISDIR(st.st_mode))
@@ -281,8 +284,6 @@ int walk_recur(Node* current) {
 	dir = current->dir;
 	current_path = current->path;
 
-	printf("%*s: thread id: %lu\n", 3 * depth + (int) strlen(current->path),
-			current->path, pthread_self());
 	/* now loop directory */
 	for (err = readdir_r(dir, &entry, &result); result != NULL && err == 0;
 			err = readdir_r(dir, &entry, &result)) {
@@ -293,7 +294,7 @@ int walk_recur(Node* current) {
 			continue;
 
 		/*	handle the files or directories start with .	 */
-		if (dot_no_access && result->d_name[0] == '.')
+		if (!(options_flags&DOT_ACCESS) && result->d_name[0] == '.')
 			continue;
 
 		/* generate the full path of subdirectory or files
@@ -304,7 +305,7 @@ int walk_recur(Node* current) {
 
 		/* get the stat info of subdir/file*/
 		if (lstat(full_path, &st) == -1) {
-			if (!no_err_msg)
+			if (!(options_flags&NO_ERR_MSG))
 				perror(full_path);
 			free(full_path);
 			continue;
@@ -313,8 +314,8 @@ int walk_recur(Node* current) {
 		/* deal with symlink -f*/
 		if (S_ISLNK(st.st_mode)) {
 			/* if -f is set, do not follow link */
-			if (not_follow_link) {
-				if (!no_err_msg)
+			if (options_flags&NOT_FOLLOW_LINK) {
+				if (!(options_flags&NO_ERR_MSG))
 					fprintf(stderr, "Symlink: %s\n", full_path);
 				free(full_path);
 				continue;
@@ -329,18 +330,24 @@ int walk_recur(Node* current) {
 				continue;
 			}
 		}
-
-		if (depth == MAX_DEPTH && (S_ISDIR(st.st_mode) || sym_link_flag == 1)) {
-			if (!no_err_msg) {
+		/*if it is not a directory or it is a sym link but not linked to a directory*/
+		if (!(S_ISDIR(st.st_mode)) || (S_ISLNK(st.st_mode) && sym_link_flag!=1))
+		{
+			search_file(full_path,search_pattern,1);
+			free(full_path);
+			continue;
+		}
+		if (depth == max_dir_depth && (S_ISDIR(st.st_mode) || sym_link_flag == 1)) {
+			if (!(options_flags&NO_ERR_MSG)) {
 				fprintf(stderr,
 						"%s is detected to exceed the search limit %d\n",
-						full_path, MAX_DEPTH);
+						full_path, max_dir_depth);
 			}
 			free(full_path);
 			continue;
 		}
 		/* if it is the directory or symlink to a directory */
-		if (depth < MAX_DEPTH && (S_ISDIR(st.st_mode) || sym_link_flag == 1)) {
+		if ((max_dir_depth<0 || depth < max_dir_depth) && (S_ISDIR(st.st_mode) || sym_link_flag == 1)) {
 			/* make a node contains info */
 			if ((next = make_node(full_path, depth + 1, stk)) == NULL ) {
 				free(full_path);
@@ -349,7 +356,7 @@ int walk_recur(Node* current) {
 			/* check if it used to appear in the history stack*/
 			else if ((prev = stack_find_history(stk, current, next->path))
 					!= NULL ) {
-				if (!no_err_msg) {
+				if (!(options_flags&NO_ERR_MSG)) {
 					fprintf(stderr, "%s is detected to cause a loop\n",
 							full_path);
 					/*
@@ -397,7 +404,7 @@ void* search_dir(void *para) {
 	pthread_rwlock_t *lock=&temp->stk->s_lock;
 
 	if ((err = pthread_rwlock_wrlock(lock)) != 0) {
-		if (!no_err_msg)
+		if (!(options_flags&NO_ERR_MSG))
 			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
 	}
 	/*
@@ -406,25 +413,26 @@ void* search_dir(void *para) {
 	stk->thread_counts++;
 
 	if ((err = pthread_rwlock_unlock(lock)) != 0) {
-		if (!no_err_msg)
+		if (!(options_flags&NO_ERR_MSG))
 			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 	}
 
 	err = walk_recur((Node*) para);
-	  //	dbg(__func__,temp->path,__LINE__);
+
 	if ((err = pthread_rwlock_wrlock(lock)) != 0) {
-		if (!no_err_msg)
+		if (!(options_flags&NO_ERR_MSG))
 			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
 	}
 	/*decrement the thread counts if detached*/
 	  stk->thread_counts--;
 
 	  if ((err = pthread_rwlock_unlock(lock)) != 0) {
-	    if (!no_err_msg)
+	    if (!(options_flags&NO_ERR_MSG))
 	      fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 	}
 	fflush(stderr);
 	pthread_exit((void*) err);
+	return (void*)err;
 }
 /*
  * another wrapper function, it will
@@ -446,16 +454,18 @@ int walk_to_next(Node* next) {
 	pthread_rwlock_wrlock(&next->stk->s_lock);
 	err = 0;
 	/* the threads number is enough, cannot create a thread*/
-	if (next->stk->thread_counts >= thread_limits && thread_limits >= 0)
+	if (thread_limits > 0 && next->stk->thread_counts >= thread_limits)
 		err = 1;
 	else {
 		/*
+		 * if thread_limits is not set always spawn a thread
+		 * or if thread# does not exceed limit
 		 * spawn a thread, if cannot create a thread, issue
 		 * an error message and let the parent thread do the "left" recursion
 		 * however, when it is available, always use a new thread
 		 */
 		err = pthread_create(&id, &next->stk->attr, search_dir, (void*) next);
-		if (err != 0 && !no_err_msg)
+		if (err != 0 && !(options_flags&NO_ERR_MSG))
 			fprintf(stderr, "pthread_create: %s\n", strerror(err));
 	}
 	pthread_rwlock_unlock(&next->stk->s_lock);
@@ -463,24 +473,4 @@ int walk_to_next(Node* next) {
 	if (err != 0)
 		err = walk_recur(next);
 	return err;
-}
-stack Stack;
-
-int main(void) {
-
-  //	struct stat info;
-	stack_init(&Stack);
-	Node *current;
-	//	lstat(argv[1], &info);
-	//if (S_ISLNK(info.st_mode))
-	//	printf("This is symlink\n");
-	current = make_node(".", 1, &Stack);
-	if(current==NULL)
-	  dbg(__func__,"make node",__LINE__);
-	stack_push(&Stack, current, NULL );
-	walk_to_next(current);
-	//walk_recur(1,&st,current);
-	//stack_destroy(&Stack);
-	//sleep(5);
-	pthread_exit(0);
 }

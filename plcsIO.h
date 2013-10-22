@@ -9,6 +9,9 @@
  *
  *  History:
  *  1. the get_realpath function is moved to rpath.h
+ *  HW2:
+ *  1 the any_line_buffer becomes a pthread_key
+ *  2 add a wrapper function search_file for convenience
  */
 
 #ifndef PLCSIO_H_
@@ -24,6 +27,13 @@
 #include "str_search.h"
 #include "global.h"
 #include "rpath.h"
+#include <pthread.h>
+
+
+/*
+ * function to create the key
+ */
+void thread_init();
 
 /*
  * search_str is a wrapper function wraps the options searches
@@ -45,10 +55,18 @@ void print_line(int lineno, char* realpath, char* str);
 /*
  * search_stream
  * accept stream ptr either file or stdin
- * read each line specified by -p swithc
+ * read each line specified by -p switch
  * or default value into any_line_buffer
  * search and print it
  */
-void search_stream(FILE *input, char* filename, char* searhc_str);
+void search_stream(FILE *input, char* filename, char* search_str);
 
+
+/*
+ * search_file
+ * accept a filename and a search string to perform a search
+ * but add another flag to indicate it is in sub directory
+ * tow work well with -q
+ */
+void search_file(char* filename, char *search_str,int flag);
 #endif /* PLCSIO_H_ */
