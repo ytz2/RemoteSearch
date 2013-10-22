@@ -83,12 +83,6 @@ static pthread_once_t init_done=PTHREAD_ONCE_INIT; // once key
 void thread_init()
 {
 	pthread_key_create(&line_buffer_key,free);
-	char *any_line_buffer; /* buffer to store lines no matter what*/
-	/* allocate memory to buffer*/
-	if ((any_line_buffer = (char*) malloc(line_buffer_size + 1)) == NULL) {
-		perror("Memory Allocation to Line Buffer\n");
-	}
-	pthread_setspecific(line_buffer_key,any_line_buffer);
 }
 
 
@@ -113,6 +107,12 @@ void search_stream(FILE *fptr, char* filename, char* objstr) {
 	 */
 	pthread_once(&init_done,thread_init);
 	any_line_buffer=pthread_getspecific(line_buffer_key);
+	/* allocate memory to buffer*/
+	if (any_line_buffer==NULL)
+	{
+		any_line_buffer = (char*) malloc(line_buffer_size + 1);
+		pthread_setspecific(line_buffer_key,any_line_buffer);
+	}
 
 	/*
 	 * check if it is stdin, if not and show_path is set

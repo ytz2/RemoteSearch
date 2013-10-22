@@ -22,7 +22,7 @@ echo "Setting up the testing input"
 path=$(pwd)
 
 make clean
-make test
+make
 mkdir ./testdir1
 cp ./test000.in ./testdir1
 cp ./test001.in ./testdir1
@@ -70,6 +70,6 @@ find ./testdir2 -print | sed -e '/^\.$/d' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /'
 echo 
 echo
 echo
-./test
-rm -rf ./testdir1
-rm -rf ./testdir2
+#rm -rf testdir1
+#rm -rf testdir2
+make clean

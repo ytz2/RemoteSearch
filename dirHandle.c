@@ -17,10 +17,10 @@
  * and leave it here.
  */
 
-/*static void dbg(const char* func, const char* path, int count) {
+static void dbg(const char* func, const char* path, int count) {
 	fprintf(stderr, "%s: %s is %d \n", func, path, count);
 	fflush(stderr);
-}*/
+}
 
 
 /*
@@ -250,7 +250,9 @@ int is_sym_dir(char* full_name) {
 	if (stat(full_name, &st) == -1) {
 		/* if the link does not exist, issue error*/
 		if (!(options_flags&NO_ERR_MSG))
-			perror(full_name);
+		{
+			fprintf(stderr,"cannot get info of %s\n",full_name);
+		}
 		val = -1;
 	} else if (S_ISDIR(st.st_mode))
 		val = 1;
@@ -331,12 +333,12 @@ int walk_recur(Node* current) {
 			}
 		}
 		/*if it is not a directory or it is a sym link but not linked to a directory*/
-		if (!(S_ISDIR(st.st_mode)) || (S_ISLNK(st.st_mode) && sym_link_flag!=1))
+		/*if (!(S_ISDIR(st.st_mode)) || (S_ISLNK(st.st_mode) && sym_link_flag!=1))
 		{
 			search_file(full_path,search_pattern,1);
 			free(full_path);
 			continue;
-		}
+		}*/
 		if (depth == max_dir_depth && (S_ISDIR(st.st_mode) || sym_link_flag == 1)) {
 			if (!(options_flags&NO_ERR_MSG)) {
 				fprintf(stderr,
@@ -381,6 +383,9 @@ int walk_recur(Node* current) {
 
 			walk_to_next(next);
 		}
+		if (!(S_ISDIR(st.st_mode)) || (S_ISLNK(st.st_mode) && sym_link_flag!=1))
+			search_file(full_path,search_pattern,1);
+
 		free(full_path);
 		fflush(stderr);
 	}
