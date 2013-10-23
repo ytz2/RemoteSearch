@@ -70,6 +70,8 @@ find ./testdir2 -print | sed -e '/^\.$/d' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /'
 echo 
 echo
 echo
-#rm -rf testdir1
-#rm -rf testdir2
+./plcs -p -t10 is testdir1/ testdir2/
+rm -rf testdir1
+rm -rf testdir2
+
 make clean

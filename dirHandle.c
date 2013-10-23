@@ -17,11 +17,15 @@
  * and leave it here.
  */
 
-static void dbg(const char* func, const char* path, int count) {
+/*static void dbg(const char* func, const char* path, int count) {
 	fprintf(stderr, "%s: %s is %d \n", func, path, count);
 	fflush(stderr);
-}
+}*/
 
+/*global lock for counter*/
+static pthread_mutex_t counter_lock=PTHREAD_MUTEX_INITIALIZER;
+/* global parameter to count how many alive threads in use */
+static  long alive_threads=0;
 
 /*
  * make a history stack node
@@ -93,7 +97,6 @@ int stack_init(stack *st) {
 	err = pthread_attr_setdetachstate(&st->attr, PTHREAD_CREATE_DETACHED);
 	if (err != 0)
 		return (err);
-	st->thread_counts = 0;
 	return 0;
 }
 /*
@@ -398,44 +401,22 @@ int walk_recur(Node* current) {
  * wrapper function for directory search
  */
 void* search_dir(void *para) {
-	Node* temp;
 	long err = 0;
-	temp = (Node*) para;
-	/*
-	 * I have to remember the lock & stk here, since once the node get free
-	 * I will have no chance to come back, a more elegant way may exist
-	 */
-	stack *stk=temp->stk;
-	pthread_rwlock_t *lock=&temp->stk->s_lock;
 
-	if ((err = pthread_rwlock_wrlock(lock)) != 0) {
-		if (!(options_flags&NO_ERR_MSG))
-			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
-	}
-	/*
-	 * increment the alive thread counts
-	 */
-	stk->thread_counts++;
-
-	if ((err = pthread_rwlock_unlock(lock)) != 0) {
-		if (!(options_flags&NO_ERR_MSG))
-			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
-	}
+	/*increment the counter when firstly enter*/
+	pthread_mutex_lock(&counter_lock);
+	alive_threads++;
+	pthread_mutex_unlock(&counter_lock);
 
 	err = walk_recur((Node*) para);
 
-	if ((err = pthread_rwlock_wrlock(lock)) != 0) {
-		if (!(options_flags&NO_ERR_MSG))
-			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
-	}
-	/*decrement the thread counts if detached*/
-	  stk->thread_counts--;
-
-	  if ((err = pthread_rwlock_unlock(lock)) != 0) {
-	    if (!(options_flags&NO_ERR_MSG))
-	      fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
-	}
 	fflush(stderr);
+
+	/*decrement the counter when firstly enter*/
+	pthread_mutex_lock(&counter_lock);
+	alive_threads--;
+	pthread_mutex_unlock(&counter_lock);
+
 	pthread_exit((void*) err);
 	return (void*)err;
 }
@@ -453,13 +434,9 @@ int walk_to_next(Node* next) {
 		walk_recur(next);
 		return 0;
 	}
-	/*use wrlock to exclude other thread create thread
-	 * because it will check the alive thread number
-	 */
-	pthread_rwlock_wrlock(&next->stk->s_lock);
-	err = 0;
+
 	/* the threads number is enough, cannot create a thread*/
-	if (thread_limits > 0 && next->stk->thread_counts >= thread_limits)
+	if (thread_limits > 0 && alive_threads >= thread_limits)
 		err = 1;
 	else {
 		/*
@@ -473,8 +450,7 @@ int walk_to_next(Node* next) {
 		if (err != 0 && !(options_flags&NO_ERR_MSG))
 			fprintf(stderr, "pthread_create: %s\n", strerror(err));
 	}
-	pthread_rwlock_unlock(&next->stk->s_lock);
-	/* if the thread creation fails, use parent thread*/
+
 	if (err != 0)
 		err = walk_recur(next);
 	return err;

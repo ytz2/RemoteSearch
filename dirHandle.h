@@ -44,7 +44,6 @@ struct STACK {
 	Node *head;
 	pthread_rwlock_t s_lock;
 	pthread_attr_t attr;
-	long thread_counts;
 };
 
 /*
