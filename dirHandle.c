@@ -241,7 +241,7 @@ char* get_fullpath(char* rpath, char *fname) {
 /*
  * test if the symlink pointing to a dir
  * if it is, return bool 1
- * else false 0
+ * else false 0,failure -1
  */
 int is_sym_dir(char* full_name) {
 	struct stat st;
@@ -254,7 +254,7 @@ int is_sym_dir(char* full_name) {
 		/* if the link does not exist, issue error*/
 		if (!(options_flags&NO_ERR_MSG))
 		{
-			fprintf(stderr,"cannot get info of %s\n",full_name);
+			fprintf(stderr,"stat(): %s %s\n",full_name,strerror(errno));
 		}
 		val = -1;
 	} else if (S_ISDIR(st.st_mode))
@@ -335,13 +335,7 @@ int walk_recur(Node* current) {
 				continue;
 			}
 		}
-		/*if it is not a directory or it is a sym link but not linked to a directory*/
-		/*if (!(S_ISDIR(st.st_mode)) || (S_ISLNK(st.st_mode) && sym_link_flag!=1))
-		{
-			search_file(full_path,search_pattern,1);
-			free(full_path);
-			continue;
-		}*/
+
 		if (depth == max_dir_depth && (S_ISDIR(st.st_mode) || sym_link_flag == 1)) {
 			if (!(options_flags&NO_ERR_MSG)) {
 				fprintf(stderr,

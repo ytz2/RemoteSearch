@@ -24,59 +24,61 @@ echo
 echo
 path=$(pwd)
 
-mkdir ./testdir1
-cp ./test000.in ./testdir1
-cp ./test001.in ./testdir1
-cp ./test001.in ./testdir1/.test001.in
-mkdir ./testdir1/testdir1_dir1
-cp ./test000.in ./testdir1/testdir1_dir1
-cp ./test001.in ./testdir1/testdir1_dir1
-mkdir ./testdir1/testdir1_dir2
-mkdir ./testdir1/testdir1_dir1/testdir1_dir1_dir1
-mkdir ./testdir1/testdir1_dir1/testdir1_dir1_dir2
-mkdir ./testdir1/testdir1_dir1/testdir1_dir1_dir1/testdir1_dir1_dir1_dir1
-cp ./test000.in ./testdir1/testdir1_dir1/testdir1_dir1_dir1/testdir1_dir1_dir1_dir1
-cp ./test001.in  ./testdir1/testdir1_dir2
-ln -s $path/testdir1 ./testdir1/testdir1_dir1/testdir1_dir1_dir1/testdir1_dir1_dir1_dir1/symtest1
-ln -s noexit ./testdir1/testdir1_dir1/testdir1_dir1_dir1/testdir1_dir1_dir1_dir1/symtest2
-mkdir ./testdir1/testdir1_dir2/testdir1_dir2_dir1
-mkdir ./testdir1/testdir1_dir2/testdir1_dir2_dir2
-cp ./test000.in ./testdir1/testdir1_dir2/testdir1_dir2_dir1
-cp ./test001.in ./testdir1/testdir1_dir2/testdir1_dir2_dir2
+mkdir ./dir
+mkdir ./dir/A
+mkdir ./dir/B
+mkdir ./dir/.A
+cp ./test000.in ./dir
+cp ./test001.in ./dir
+cp ./test000.in ./dir/A
+cp ./test001.in ./dir/B
+cp ./test000.in ./dir/.A/.test000.in
+mkdir ./dir/A/A
+mkdir ./dir/A/B
+mkdir ./dir/B/A
+mkdir ./dir/B/B
+cp ./test000.in ./dir/A/A
+cp ./test001.in ./dir/A/B
+cp ./test000.in ./dir/B/A
+cp ./test001.in ./dir/B/B
+mkdir ./dir/A/A/A
+mkdir ./dir/A/A/B
+mkdir ./dir/B/B/A
+mkdir ./dir/B/B/B
+cp ./test000.in ./dir/A/A/A
+cp ./test001.in ./dir/A/A/B
+cp ./test000.in ./dir/B/B/A
+cp ./test001.in ./dir/B/B/B
 
-mkdir ./testdir2
-cp ./test000.in ./testdir2
-cp ./test001.in ./testdir2
-cp ./test001.in ./testdir2/.test001.in
-mkdir ./testdir2/testdir2_dir1
-cp ./test000.in ./testdir2/testdir2_dir1
-cp ./test001.in ./testdir2/testdir2_dir1
-mkdir ./testdir2/testdir2_dir2
-mkdir ./testdir2/testdir2_dir1/testdir2_dir1_dir1
-mkdir ./testdir2/testdir2_dir1/testdir2_dir1_dir2
-mkdir ./testdir2/testdir2_dir1/testdir2_dir1_dir1/testdir2_dir1_dir1_dir1
-cp ./test000.in ./testdir2/testdir2_dir1/testdir2_dir1_dir1/testdir2_dir1_dir1_dir1
-cp ./test001.in  ./testdir2/testdir2_dir2
-ln -s $path/testdir2 ./testdir2/testdir2_dir1/testdir2_dir1_dir1/testdir2_dir1_dir1_dir1/symtest1
-ln -s noexit ./testdir2/testdir2_dir1/testdir2_dir1_dir1/testdir2_dir1_dir1_dir1/symtest2
-mkdir ./testdir2/testdir2_dir2/testdir2_dir2_dir1
-mkdir ./testdir2/testdir2_dir2/testdir2_dir2_dir2
-cp ./test000.in ./testdir2/testdir2_dir2/testdir2_dir2_dir1
-cp ./test001.in ./testdir2/testdir2_dir2/testdir2_dir2_dir2
+cp -rf dir dir2
 
+ln -s $path/dir  ./dir/A/A/A/symtest1
+ln -s noexit ./dir/B/B/B/symtest2
+ln -s ./test000.in ./dir/A/B/symtest3
+ln -s ./.. ./dir/B/B/A/symtest4
+
+ln -s $path/dir2  ./dir2/A/A/A/symtest1
+ln -s noexit ./dir2/B/B/B/symtest2
+ln -s ./test000.in ./dir2/A/B/symtest3
+ln -s ./.. ./dir2/B/B/A/symtest4
 
 echo "The test file and directory structure"
 echo "   |-test000.in"
 echo "   |-test001.in"
 echo "   |-test002.in"
-find ./testdir1 -print | sed -e '/^\.$/d' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
-find ./testdir2 -print | sed -e '/^\.$/d' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
+find ./dir -print | sed -e '/^\.$/d' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
+find ./dir2 -print | sed -e '/^\.$/d' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
 echo 
 echo "Notes:"
-ls -l ./testdir1/testdir1_dir1/testdir1_dir1_dir1/testdir1_dir1_dir1_dir1/symtest1
-ls -l ./testdir1/testdir1_dir1/testdir1_dir1_dir1/testdir1_dir1_dir1_dir1/symtest2
-ls -l ./testdir2/testdir2_dir1/testdir2_dir1_dir1/testdir2_dir1_dir1_dir1/symtest1
-ls -l ./testdir2/testdir2_dir1/testdir2_dir1_dir1/testdir2_dir1_dir1_dir1/symtest2
+ls -l  ./dir/A/A/A/symtest1
+ls -l ./dir/B/B/B/symtest2
+ls -l ./dir/A/B/symtest3
+ls -l  ./dir/B/B/A/symtest4
+
+ls -l  ./dir2/A/A/A/symtest1
+ls -l  ./dir2/B/B/B/symtest2
+ls -l  ./dir2/A/B/symtest3
+ls -l  ./dir2/B/B/A/symtest4
 
 echo "Making File"
 make
@@ -126,6 +128,11 @@ echo "----(3.4) Multiple Switch Parameters But Use the Last "
 echo "----(3.5) File Error "
 echo "----(3.6) Others "
 echo
+echo "Part 3 Assignment2 Tests "
+echo "--(1) Recursive Directory Search"
+echo "----(1.1) Main Thread Recursive Search "
+echo "----(1.2) Basic Search Function Test "
+echo "----(1.3) Stream Redirection Test "
 echo "***************************************************"
 echo "*******Part 1 Bug Fixings in Assignment 1**********"
 echo "***************************************************"
@@ -1000,13 +1007,45 @@ echo "(3.6) Others "
 echo "Note: both -b-e are set has been tested in section 1 and 2 "
 echo "Note: reading redirection and multiple redirection have been tested in section 1 and 2 "
 echo "---------------------------------------------------"
-echo "Setting up the testing input"
-
-
 echo
+echo
+
+echo "***************************************************"
+echo "*******  Part 3 Assignment 2 Tests ****************"
+echo "***************************************************"
+echo
+echo
+echo "***************************************************"
+echo "*******(1) Basic Functionality Test   *************"
+echo "***************************************************"
+echo "(1.1) Main Thread Recursive Search "
+echo
+test_section=311
+test_file1=dir1
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file1=$test_file1
+echo "COMMAND:./plcs -t0 -p -n2 this dir1>$out_file 2>$err_file"
+./plcs -t0 -p -n2 this dir1>$out_file 2>$err_file
+
+EXIT=$?
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 5"
+echo "---------------------------------------------------"
+
+
+
 #./plcs -p -t10 is testdir1/ testdir2/
-rm -rf testdir1
-rm -rf testdir2
+#rm -rf dir
+#rm -rf dir2
 rm *.err
 rm *.out
 make clean
