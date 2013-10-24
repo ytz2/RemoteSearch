@@ -18,11 +18,12 @@ echo
 echo "Test Under Enviroment:"
 uname
 echo
-echo "Setting up the testing input"
+echo
+echo "The EXIT STATUS DEFINITION: 0 SUCCESS, OTHERS FAILURE"
+echo 
+echo
 path=$(pwd)
 
-make clean
-make
 mkdir ./testdir1
 cp ./test000.in ./testdir1
 cp ./test001.in ./testdir1
@@ -63,15 +64,949 @@ mkdir ./testdir2/testdir2_dir2/testdir2_dir2_dir2
 cp ./test000.in ./testdir2/testdir2_dir2/testdir2_dir2_dir1
 cp ./test001.in ./testdir2/testdir2_dir2/testdir2_dir2_dir2
 
-echo "The test directory structure"
+
+echo "The test file and directory structure"
+echo "   |-test000.in"
+echo "   |-test001.in"
+echo "   |-test002.in"
 find ./testdir1 -print | sed -e '/^\.$/d' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
-echo
 find ./testdir2 -print | sed -e '/^\.$/d' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
 echo 
+echo "Notes:"
+ls -l ./testdir1/testdir1_dir1/testdir1_dir1_dir1/testdir1_dir1_dir1_dir1/symtest1
+ls -l ./testdir1/testdir1_dir1/testdir1_dir1_dir1/testdir1_dir1_dir1_dir1/symtest2
+ls -l ./testdir2/testdir2_dir1/testdir2_dir1_dir1/testdir2_dir1_dir1_dir1/symtest1
+ls -l ./testdir2/testdir2_dir1/testdir2_dir1_dir1/testdir2_dir1_dir1_dir1/symtest2
+
+echo "Making File"
+make
+echo 
+echo
+echo "Test Plan:"
+echo "Part One Bug Fixing in Assignment 1"
+echo "1   4 #define lines in header files (deducted 2 pts)"
+echo "2  -l para and para should be positive and less than MAX_LINE_BUFFER"
+echo "   -m para and para should be positive"
+echo "   -n para and para should be positive and less than MAX_cols"
+echo "    deducted 5 pts"
+echo "3  -m wrong intreptation, it should be the number of lines to be printed"
+echo "   deducted 1 pt"
+echo "4  use unsigend char in function boyer_moore"
+echo "   deducted 1 pt"
+echo "5  -h print a line of usage, after -h exit with success"
+echo "   -p -v switch help inf (I am very sad here TOT)"
+echo "   deducted 4 pts"
+echo "6  -p should have a : followed by a space"
+echo "   deducted 1 pt"
+echo "Summary: +5 pts for Assignmet 1 Test File, total 100-14+5=91"
+echo "         all bugs fixed for Assignment 1"
+echo 
+echo "Part 2 Assignment1 Tests for validation"
+echo "--(1) Basic Functionality Test"
+echo "----(1.1) Help Information Test "
+echo "----(1.2) Basic Search Function Test "
+echo "----(1.3) Stream Redirection Test "
+echo "--(2) Option Switch Function Test"
+echo "----(2.1) Begin Search -b test "
+echo "----(2.2) End Search -e Test "
+echo "----(2.3) Begin End Search -b and -e Test "
+echo "----(2.4) Case-insensitive Test -i"
+echo "----(2.5) Path Option Test -p "
+echo "----(2.6) Invert Search Test -v "
+echo "----(2.7) Segment Partition Test -l"
+echo "----(2.8) Maximum Lines Test -m "
+echo "----(2.9) Printing Format Test -n"
+echo "----(2.10) Combined Options case#1 "
+echo "----(2.11) Combined Options case#2 "
+echo "--(3) Miscellaneous Details Test"
+echo "----(3.1) No Search String "
+echo "----(3.2) Switch Error "
+echo "----(3.3) Switch Turned On and not Toggled "
+echo "----(3.4) Multiple Switch Parameters But Use the Last "
+echo "----(3.5) File Error "
+echo "----(3.6) Others "
+echo
+echo "***************************************************"
+echo "*******Part 1 Bug Fixings in Assignment 1**********"
+echo "***************************************************"
+echo
+echo "---------------------------------------------------"
+echo "1. 4 #define lines in header files (deducted 2 pt)"
+echo " Command: cat ospenv.h"
+echo "command: grep ospenv.h *.h plcs.c"
+cat ospenv.h
+grep ospenv.h *.h plcs.c
+echo "---------------------------------------------------"
+echo
+echo "---------------------------------------------------"
+echo "2. -l para and para should be positive and less than MAX_LINE_BUFFER"
+echo "   -m para and para should be positive"
+echo "   -n para and para should be positive and less than MAX_COLS"
+echo " deducted 5 pts"
+echo "Command: ./plcs -l-1 -l0 -l4096 -m-1 -m0  -n-1 -n16 'nothing' nonexist"
+errfile=temp.err
+./plcs -l-1 -l0 -l4096 -m-1 -m0  -n-1 -n16 nothing nonexist 2> $errfile
+EXIT=$?
+cat $errfile
+print_status $EXIT
+echo "EXPECTED EXIT: Failure"
+wc -l $errfile | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 7"
+echo "---------------------------------------------------"
+echo
+echo "---------------------------------------------------"
+echo "3  -m wrong intreptation, it should be the number of lines to be printed"
+echo "   deducted 1 pt"
+out_file=tem.out
+err_file=temp.err
+in_file=test000.in
+echo "COMMAND:./plcs -m2 is $in_file >$out_file 2>$err_file"
+./plcs -m2 is $in_file >$out_file 2>$err_file
+EXIT=$?
+echo "SAMPLE INPUT:"
+cat $in_file
+echo
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat $err_file
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 2"
+echo "---------------------------------------------------"
+echo
+echo "---------------------------------------------------"
+echo "4  use unsigned char in function boyer_moore"
+echo "   deducted 1 pt"
+echo "COMMAND: grep last str_search.c"
+grep "last" str_search.c
+echo "---------------------------------------------------"
+echo
+echo "---------------------------------------------------"
+echo "5  -h print a line of usage, after -h exit with success"
+echo "   -p -v switch help inf (I am very sad here TOT)"
+echo "   deducted 4 pts"
+echo " command: ./plcs -h -n20 -l 3"s
+./plcs -h -n20 -l 3 
+EXIT=$?
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "---------------------------------------------------"
+echo
+echo "---------------------------------------------------"
+echo "6  -p should have a : followed by a space"
+echo "   deducted 1 pt"
+out_file=tem.out
+err_file=temp.err
+in_file=test000.in
+echo "COMMAND:./plcs -p -n3 is $in_file >$out_file 2>$err_file"
+./plcs -p -n3 is $in_file >$out_file 2>$err_file
+EXIT=$?
+echo "SAMPLE INPUT:"
+cat $in_file
+echo
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat $err_file
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 3"
+echo "---------------------------------------------------"
+echo
+echo "---------------------------------------------------"
+
+echo "Test Part Two: Validation of Assignment 1"
+########################TEST 1 ###############################
+########################TEST 1.1##############################
 echo
 echo
-./plcs -p -t10 is testdir1/ testdir2/
+echo "***************************************************"
+echo "*******(1) Basic Functionality Test ***************"
+echo "***************************************************"
+echo
+echo "---------------------------------------------------"
+echo "(1.1) Help Information Test "
+echo "Purpose: print help information"
+# print the help infomation
+
+test_section=110
+test_file=000
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file=test$test_file.in
+echo "COMMAND:./plcs -h "???" $in_file >$out_file 2>$err_file"
+./plcs -h "???" $in_file >$out_file 2>$err_file
+
+EXIT=$?
+echo "SAMPLE INPUT:"
+cat test$test_file.in
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+file=test_$test_section.out
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 19"
+echo "---------------------------------------------------"
+
+########################TEST 1.2##############################
+echo "(1.2) Basic Search Function Test "
+echo
+echo "(1.2.1) case#1 "
+echo "Purpose: Test string search with file stream"
+
+test_section=121
+test_file=000
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file=test$test_file.in
+
+echo "COMMAND:./plcs "test" $in_file >$out_file 2>$err_file"
+./plcs "test" $in_file >$out_file 2>$err_file
+
+EXIT=$?
+echo "SAMPLE INPUT:"
+cat test$test_file.in
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+file=test_$test_section.out
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 5"
+echo "---------------------------------------------------"
+
+
+echo
+echo "(1.2.2) case#2 "
+echo "purpose: Test string search with file stream"
+echo
+
+test_section=122
+test_file=001
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file=test$test_file.in
+echo "COMMAND:./plcs "sing" $in_file >$out_file 2>$err_file"
+./plcs "sing" $in_file >$out_file 2>$err_file
+
+EXIT=$?
+echo "SAMPLE INPUT:"
+cat test$test_file.in
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+file=test_$test_section.out
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 5"
+echo "---------------------------------------------------"
+
+echo
+echo "(1.2.3) case#3 "
+echo "purpose: Test zero string search with file stream"
+echo
+
+test_section=123
+test_file=000
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file=test$test_file.in
+echo "COMMAND:./plcs "" $in_file >$out_file 2>$err_file"
+./plcs "" $in_file >$out_file 2>$err_file
+
+EXIT=$?
+echo "SAMPLE INPUT:"
+cat test$test_file.in
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+file=test_$test_section.out
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 10"
+echo "---------------------------------------------------"
+
+
+########################TEST 1.3 ###############################
+echo
+echo "(1.3) Stream Redirection Test "
+echo
+echo "---------------------------------------------------"
+echo "(1.3.1) case#1 "
+echo "purpose: Test string search from one file"
+echo
+test_section=131
+test_file=000
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file=test$test_file.in
+echo "COMMAND:./plcs "test" $in_file >$out_file 2>$err_file"
+./plcs "test" $in_file >$out_file 2>$err_file
+
+EXIT=$?
+echo "SAMPLE INPUT:"
+cat test$test_file.in
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+file=test_$test_section.out
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 5"
+echo "---------------------------------------------------"
+
+echo
+echo "(1.3.2) case#2 "
+echo "purpose: Test string search from multiple files"
+test_section=132
+test_file1=000
+test_file2=001
+test_file3=002
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file1=test$test_file1.in
+in_file2=test$test_file2.in
+in_file3=test$test_file3.in
+echo "COMMAND:./plcs "is" $in_file1 $in_file2 $infile3 >$out_file 2>$err_file"
+./plcs "is" $in_file1 $in_file2 $infile3 >$out_file 2>$err_file
+
+EXIT=$?
+echo "SAMPLE INPUT:"
+echo $in_file1:
+cat $in_file1
+echo
+echo $in_file2:
+cat $in_file2
+echo
+echo $in_file3:
+cat $in_file3
+echo
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 5"
+echo "---------------------------------------------------"
+
+echo
+echo "(1.3.3) case#3 "
+echo "purpose: Test string search from multiple standard input"
+test_section=133
+test_file1=000
+test_file2=001
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file1=test$test_file1.in
+in_file2=test$test_file2.in
+echo "COMMAND: ./plcs "is" - - <$in_file1 $in_file2 >$out_file 2>$err_file"
+./plcs "is" - - <$in_file1 $in_file2 >$out_file 2>$err_file
+
+EXIT=$?
+echo "SAMPLE INPUT:"
+echo $in_file1:
+cat $in_file1
+echo
+echo $in_file2:
+cat $in_file2
+echo
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 8"
+echo "---------------------------------------------------"
+
+echo
+echo "(1.3.4) case#4 "
+echo "purpose: Redirection between file and stdin"
+test_section=134
+test_file1=000
+test_file2=001
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file1=test$test_file1.in
+in_file2=test$test_file2.in
+echo "COMMAND:./plcs "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file"
+./plcs "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file
+
+EXIT=$?
+echo "SAMPLE INPUT:"
+echo $in_file1:
+cat $in_file1
+echo
+echo $in_file2:
+cat $in_file2
+echo
+echo $in_file1:
+cat $in_file1
+echo
+
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 8"
+echo "---------------------------------------------------"
+
+
+
+########################TEST 2 ###############################
+########################TEST 2.1##############################
+echo
+echo
+echo "***************************************************"
+echo "*******(2) Option Switch Function Test*************"
+echo "***************************************************"
+echo
+echo "---------------------------------------------------"
+echo "(2.1) Begin Search -b test "
+echo "Purpose: Testing turn on -b option to search string at begin"
+# print the help infomation
+
+test_section=210
+test_file=000
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file=test$test_file.in
+echo "COMMAND: ./plcs -b "test" $in_file >$out_file 2>$err_file"
+./plcs -b "test" $in_file >$out_file 2>$err_file
+EXIT=$?
+echo "SAMPLE INPUT:"
+cat test$test_file.in
+echo
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat $err_file
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 2"
+echo "---------------------------------------------------"
+
+echo "(2.2) End Search -e Test "
+echo "Purpose: Testing turn on -e option to search string at begin"
+# print the help infomation
+
+test_section=220
+test_file=001
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file=test$test_file.in
+echo "COMMAND: ./plcs -e "singing" $in_file >$out_file 2>$err_file"
+./plcs -e "singing" $in_file >$out_file 2>$err_file
+EXIT=$?
+echo "SAMPLE INPUT:"
+cat test$test_file.in
+echo
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat $err_file
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 2"
+
+echo "---------------------------------------------------"
+
+echo "(2.3) Begin End Search -b and -e Test "
+echo "Purpose: Testing turn on -b and -e option to search the string only have object string"
+# print the help infomation
+
+test_section=230
+test_file=001
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file=test$test_file.in
+echo "COMMAND: ./plcs -be "singing" $in_file >$out_file 2>$err_file"
+./plcs -be "singing" $in_file >$out_file 2>$err_file
+EXIT=$?
+echo "SAMPLE INPUT:"
+cat test$test_file.in
+echo
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat $err_file
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 1"
+
+echo "---------------------------------------------------"
+
+echo "(2.4) Case-insensitive Test "
+echo "Purpose: Testing turn on -i option to search case-insensitively"
+# print the help infomation
+
+test_section=240
+test_file=001
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file=test$test_file.in
+echo "COMMAND: ./plcs -i "bird" $in_file >$out_file 2>$err_file"
+./plcs -i "bird" $in_file >$out_file 2>$err_file
+EXIT=$?
+echo "SAMPLE INPUT:"
+cat test$test_file.in
+echo
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat $err_file
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 6"
+
+echo "---------------------------------------------------"
+
+echo "(2.5) Path Option Test "
+echo "Purpose: Testing turn on -p option to show realpath"
+echo "Note: stdin should silently show no realpath"
+
+test_section=250
+test_file1=000
+test_file2=001
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file1=test$test_file1.in
+in_file2=test$test_file2.in
+echo "COMMAND:./plcs -p "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file"
+./plcs -p "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file
+
+EXIT=$?
+echo "SAMPLE INPUT:"
+echo $in_file1:
+cat $in_file1
+echo
+echo $in_file2:
+cat $in_file2
+echo
+echo $in_file1:
+cat $in_file1
+echo
+
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 8"
+echo "---------------------------------------------------"
+
+echo "(2.6) Invert Search Test -v "
+echo "Purpose: Testing turn on -v option to search strings do not contain the to be searched"
+# print the help infomation
+
+test_section=260
+test_file=001
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file=test$test_file.in
+echo "COMMAND: ./plcs -v "singing" $in_file >$out_file 2>$err_file"
+./plcs -v "singing" $in_file >$out_file 2>$err_file
+EXIT=$?
+echo "SAMPLE INPUT:"
+cat test$test_file.in
+echo
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat $err_file
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 5"
+
+echo "---------------------------------------------------"
+
+echo "(2.7) Segment Partition Test -l"
+echo "Purpose: Testing turn on -l number option to set buffer size"
+# print the help infomation
+
+test_section=270
+test_file=001
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file=test$test_file.in
+echo "COMMAND: ./plcs -l7 "singing" $in_file >$out_file 2>$err_file"
+./plcs -l7 "singing" $in_file >$out_file 2>$err_file
+EXIT=$?
+echo "SAMPLE INPUT:"
+cat test$test_file.in
+echo
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat $err_file
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 2"
+
+echo "---------------------------------------------------"
+
+echo "(2.8) Maximum Lines Test -m "
+echo "Purpose: Testing turn on -m number option to maximum lines to be searched"
+# print the help infomation
+
+test_section=280
+test_file=001
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file=test$test_file.in
+echo "COMMAND: ./plcs -m6 "singing" $in_file >$out_file 2>$err_file"
+./plcs -m3 "singing" $in_file >$out_file 2>$err_file
+EXIT=$?
+echo "SAMPLE INPUT:"
+cat test$test_file.in
+echo
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat $err_file
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 3"
+
+echo "---------------------------------------------------"
+
+echo "(2.9) Printing Format Test -n"
+echo "Purpose: Testing turn on -n number option to format printing"
+echo "Note: stdin should silently show no realpath"
+
+test_section=290
+test_file1=000
+test_file2=001
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file1=test$test_file1.in
+in_file2=test$test_file2.in
+echo "COMMAND:./plcs -p -n7 "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file"
+./plcs -p -n7 "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file
+
+EXIT=$?
+echo "SAMPLE INPUT:"
+echo $in_file1:
+cat $in_file1
+echo
+echo $in_file2:
+cat $in_file2
+echo
+echo $in_file1:
+cat $in_file1
+echo
+
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 8"
+echo "---------------------------------------------------"
+
+
+echo "---------------------------------------------------"
+
+echo "(2.10) Combined Options case#1 "
+echo "Purpose: Testing -ipv -l -m and -n search"
+echo "Note: stdin should silently show no realpath"
+
+test_section=210
+test_file1=000
+test_file2=001
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file1=test$test_file1.in
+in_file2=test$test_file2.in
+echo "COMMAND:./plcs -ipv -l50 -m3 -n7 "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file"
+./plcs  -ipv -l50 -m3 -n7 "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file
+
+EXIT=$?
+echo "SAMPLE INPUT:"
+echo $in_file1:
+cat $in_file1
+echo
+echo $in_file2:
+cat $in_file2
+echo
+echo $in_file1:
+cat $in_file1
+echo
+
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 9"
+echo "---------------------------------------------------"
+
+echo "(2.11) Combined Search case#2 "
+echo "Purpose: Testing -beipv -l -m and -n search"
+echo "Note: stdin should silently show no realpath"
+
+test_section=211
+test_file1=000
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file1=test$test_file1.in
+echo "COMMAND:./plcs -beipv -l50 -m8 -n7 "test" $in_file1 >$out_file 2>$err_file"
+./plcs  -beipv -l50 -m6 -n7 "test"  $in_file1 >$out_file 2>$err_file
+
+EXIT=$?
+echo "SAMPLE INPUT:"
+echo $in_file1:
+cat $in_file1
+echo
+
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 6"
+echo "---------------------------------------------------"
+
+
+
+########################TEST 3 ###############################
+########################TEST 3.1##############################
+echo
+echo
+echo "***************************************************"
+echo "*******(3) Miscellaneous Details Test *************"
+echo "***************************************************"
+echo
+echo "---------------------------------------------------"
+echo "(3.1) No Search String "
+echo "Purpose:When search string is not provided, report error "
+echo "        and exit with failure"
+
+test_section=310
+out_file=test$test_section.out
+err_file=test$test_section.err
+echo "COMMAND:./plcs >$out_file 2>$err_file"
+./plcs >$out_file 2>$err_file
+
+EXIT=$?
+
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: FAILURE"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 0"
+echo "---------------------------------------------------"
+
+echo "(3.2) Switch Error "
+echo "Purpose: When option value is wrong, report it and continue "
+echo "        to process others untill all finished and exit with failure"
+
+test_section=320
+out_file=test$test_section.out
+err_file=test$test_section.err
+echo "COMMAND:./plcs  -abcdef  -l5 -l242424 -lAGAFA -m5 -m0 -n1341 -n15 is - >$out_file 2>$err_file"
+./plcs -abcdef  -l5 -l242424 -lAGAFA -m5 -n0 -m0 -n1341 -n15 is - <test000.in >$out_file 2>$err_file
+EXIT=$?
+
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: FAILURE"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 0"
+echo "---------------------------------------------------"
+
+echo "(3.3) Switch Turned On and not Toggled "
+echo "Purpose:Any switches is turned on is turned on"
+
+test_section=330
+test_file1=000
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file1=test$test_file1.in
+echo "COMMAND:./plcs  -bbbbeeeiippvvv -l50 -m8 -n7 "test" $in_file1 >$out_file 2>$err_file"
+./plcs  -bbbbeeeiippvvv -l50 -m6 -n7 "test"  $in_file1 >$out_file 2>$err_file
+
+EXIT=$?
+echo "SAMPLE INPUT:"
+echo $in_file1:
+cat $in_file1
+echo
+
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 6"
+echo "---------------------------------------------------"
+
+
+echo "(3.4) Multiple Switch Parameters But Use the Last "
+echo "Purpose: No many times a switch with parameter has been set, use the last one"
+
+test_section=340
+test_file1=000
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file1=test$test_file1.in
+echo "COMMAND:./plcs  -l3 -m2 -l1 -l50 -m4 -n7 "test" $in_file1 >$out_file 2>$err_file"
+./plcs  -l3 -m2 -l1 -l50 -m4 -n7 "test"  $in_file1 >$out_file 2>$err_file
+
+EXIT=$?
+echo "SAMPLE INPUT:"
+echo $in_file1:
+cat $in_file1
+echo
+
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 4"
+echo "---------------------------------------------------"
+
+echo "(3.5) File Error "
+echo "Purpose: Be able to report error about files, but "
+echo "         be able to continue to process the other files"
+
+test_section=350
+test_file1=000
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file1=test$test_file1.in
+echo "COMMAND:./plcs  "test" notexist__ $in_file1 notexist2__ >$out_file 2>$err_file"
+./plcs  "test" notexist__ $in_file1 notexist2__ >$out_file 2>$err_file
+
+EXIT=$?
+echo "SAMPLE INPUT:"
+echo $in_file1:
+cat $in_file1
+echo
+
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 5"
+echo "---------------------------------------------------"
+
+echo "(3.6) Others "
+echo "Note: both -b-e are set has been tested in section 1 and 2 "
+echo "Note: reading redirection and multiple redirection have been tested in section 1 and 2 "
+echo "---------------------------------------------------"
+echo "Setting up the testing input"
+
+
+echo
+#./plcs -p -t10 is testdir1/ testdir2/
 rm -rf testdir1
 rm -rf testdir2
-
+rm *.err
+rm *.out
 make clean

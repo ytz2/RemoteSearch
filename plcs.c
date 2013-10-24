@@ -51,9 +51,10 @@ stack* stacks[MAX_STACKS];
 int stacks_top=-1;
 void push_stacks(stack *val);
 void clear_stacks();
-// function to clean up and will be called by atexit()
-void exit_func();
-
+// function to clean up the string bufferand will be called by atexit()
+void exit_func1();
+// function to clear up the stacks
+void exit_func2();
 
 /*main function*/
 int main(int argc, char *argv[]) {
@@ -80,23 +81,27 @@ int main(int argc, char *argv[]) {
 	while ((c = getopt(argc, argv, OPTIONS)) != -1) {
 		switch (c) {
 		case 'h': /* print help info */
+			printf("Usage: plcs [options] search_string [list of input file/directory names]\n");
+			printf("Search search_string in Provided File,Directory or Standard input\n");
+			printf("Example: ./plcs hello main.c\n");
 			printf("-h: this is help information\n");
 			printf("-b: select lines only matched at begin (default OFF)\n");
 			printf("-e: select lines only matched at end (default OFF)\n");
 			printf("-i: turn case sensitive OFF (default ON)\n");
+			printf("-v: turn inverse search ON (default OFF)\n");
 			printf("-l512: set the size of buffer to 512\n"
 					"\t(default %d and must less than %d)\n",
 					DEFAULT_LINE_BUFFER, MAX_LINE_BUFFER);
 			printf("-p: include the real path of file\n");
 			printf("-m50: set the maximum number of lines to\n "
 					"\tbe processes to 50 \n");
-			printf("-n8: set the column of format number to 8 (max is 16)\n");
+			printf("-n8: set the column of format number to 8 (max is 15)\n");
 			printf("-a: process the files or directories in sub directories starts with '.'\n");
 			printf("-f: do not follow the symbolic link\n");
 			printf("-q: silent the error report when processing sub directories\n");
-			printf("-d5: the recursive descent into directories is limited to 5\n");
-			printf("-t3: to limit 3 threads when processing sub directories\n");
-			break;
+			printf("-d5: the recursive descent depth into directories is limited to 5\n");
+			printf("-t3: to limit to 3 threads when processing sub directories\n");
+			return 0;
 		case 'b': /* turn match at begin on */
 			options_flags |= AT_BEGIN;
 			break;
@@ -195,7 +200,6 @@ int main(int argc, char *argv[]) {
 			break;
 		} /* switch */
 	}
-
 	if (state == -1)
 		return EXIT_FAILURE;
 
@@ -212,7 +216,7 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "search_string is not provided as an argument\n");
 		return 1;
 	}
-	atexit(exit_func);
+	atexit(exit_func1);
 	/*if both -b and -e are not switched on, build the shit table*/
 	/*for BM algorithm to implement*/
 	if (!(options_flags & AT_BEGIN) && !(options_flags & AT_BEGIN)
@@ -280,16 +284,21 @@ int main(int argc, char *argv[]) {
 		}
 		search_file(temp_str,search_pattern,0);
 	}
-
+	atexit(exit_func2);
 	pthread_exit(NULL);
 
 } /* main */
 
 // function to clean up
-void exit_func()
+void exit_func1()
 {
 	if (search_pattern != NULL)
 		free(search_pattern);
+}
+
+// function to clear up the stacks
+void exit_func2()
+{
 	clear_stacks();
 }
 /* push a stack* to the stack of stacks*/

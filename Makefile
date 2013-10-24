@@ -10,13 +10,13 @@ UNAMES_S := $(shell uname -s)
 ifeq ($ (UNAMES_S),solaris)
 	CFLAGS= -Wall -O -g
 else
-	CFLAGS=  -Wall  -g -Wextra
+	CFLAGS=  -Wall -O -g -Wextra
 endif
 
 ifeq ($ (UNAMES_S),Darwin)
 	PFLAGS=
 else
-	PFLAGS= -lpthread
+	PFLAGS= 
 endif
 
 
