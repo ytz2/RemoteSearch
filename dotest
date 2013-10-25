@@ -13,7 +13,7 @@ fi
 }  
 
 echo "Yanhua Liu (ytz2)"
-echo "Tests for CS820 Assignment1"
+echo "Tests for CS820 Assignment2"
 echo
 echo "Test Under Enviroment:"
 uname
@@ -25,7 +25,7 @@ make
 echo 
 echo
 echo "Test Plan:"
-echo "Part One Bug Fixing in Assignment 1"
+echo "Part 1 Bug Fixing in Assignment 1"
 echo "1   4 #define lines in header files (deducted 2 pts)"
 echo "2  -l para and para should be positive and less than MAX_LINE_BUFFER"
 echo "   -m para and para should be positive"
@@ -1365,7 +1365,7 @@ print_status $EXIT
 echo "EXPECTED EXIT: SUCCESS"
 echo "TOTAL OUTPUT LINES"
 wc -l test$test_section.out | awk '{ print $1 }'
-echo "EXPTECTED OUTPUT LINES: 40"
+echo "EXPTECTED OUTPUT LINES: 42"
 echo "---------------------------------------------------"
 echo
 
