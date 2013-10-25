@@ -1,6 +1,6 @@
 #!/bin/bash
-# Yanhua Liu ytz2 assignment 1 for cs820
-# Sep 10, 2013
+# Yanhua Liu ytz2 assignment 2 for cs820
+# OCT 24, 2013
 
 # print the status
 function print_status {
@@ -21,66 +21,6 @@ echo
 echo
 echo "The EXIT STATUS DEFINITION: 0 SUCCESS, OTHERS FAILURE"
 echo 
-echo
-path=$(pwd)
-
-mkdir ./dir
-mkdir ./dir/A
-mkdir ./dir/B
-mkdir ./dir/.A
-cp ./test000.in ./dir
-cp ./test001.in ./dir
-cp ./test000.in ./dir/A
-cp ./test001.in ./dir/B
-cp ./test000.in ./dir/.A/.test000.in
-mkdir ./dir/A/A
-mkdir ./dir/A/B
-mkdir ./dir/B/A
-mkdir ./dir/B/B
-cp ./test000.in ./dir/A/A
-cp ./test001.in ./dir/A/B
-cp ./test000.in ./dir/B/A
-cp ./test001.in ./dir/B/B
-mkdir ./dir/A/A/A
-mkdir ./dir/A/A/B
-mkdir ./dir/B/B/A
-mkdir ./dir/B/B/B
-cp ./test000.in ./dir/A/A/A
-cp ./test001.in ./dir/A/A/B
-cp ./test000.in ./dir/B/B/A
-cp ./test001.in ./dir/B/B/B
-
-cp -rf dir dir2
-
-ln -s $path/dir  ./dir/A/A/A/symtest1
-ln -s noexit ./dir/B/B/B/symtest2
-ln -s ./test000.in ./dir/A/B/symtest3
-ln -s ./.. ./dir/B/B/A/symtest4
-
-ln -s $path/dir2  ./dir2/A/A/A/symtest1
-ln -s noexit ./dir2/B/B/B/symtest2
-ln -s ./test000.in ./dir2/A/B/symtest3
-ln -s ./.. ./dir2/B/B/A/symtest4
-
-echo "The test file and directory structure"
-echo "   |-test000.in"
-echo "   |-test001.in"
-echo "   |-test002.in"
-find ./dir -print | sed -e '/^\.$/d' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
-find ./dir2 -print | sed -e '/^\.$/d' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
-echo 
-echo "Notes:"
-ls -l  ./dir/A/A/A/symtest1
-ls -l ./dir/B/B/B/symtest2
-ls -l ./dir/A/B/symtest3
-ls -l  ./dir/B/B/A/symtest4
-
-ls -l  ./dir2/A/A/A/symtest1
-ls -l  ./dir2/B/B/B/symtest2
-ls -l  ./dir2/A/B/symtest3
-ls -l  ./dir2/B/B/A/symtest4
-
-echo "Making File"
 make
 echo 
 echo
@@ -129,10 +69,34 @@ echo "----(3.5) File Error "
 echo "----(3.6) Others "
 echo
 echo "Part 3 Assignment2 Tests "
-echo "--(1) Recursive Directory Search"
-echo "----(1.1) Main Thread Recursive Search "
-echo "----(1.2) Basic Search Function Test "
-echo "----(1.3) Stream Redirection Test "
+echo "--(1) Directory Search"
+echo "----(1.1) Default Behavoir In Searching Directory "
+echo "----(1.2) -a options test "
+echo "------(1.2.1) -a options test for directory "
+echo "------(1.2.2) turn off -a search level0 .file and dir"
+echo "----(1.3) -d option related test "
+echo "------(1.3.1) -d switch test"
+echo "------(1.3.2) -d0 test"
+echo "------(1.3.3) -d2 test"
+echo "------(1.3.4) -d limit and report full path"
+echo "----(1.4) -f option related test "
+echo "------(1.4.1) -f switch to stop following soft link"
+echo "------(1.4.2) turn off -f to detect loop"
+echo "------(1.4.3) turn off -f to detect loop but not necessary at symlink"
+echo "--(2) Multithread Search"
+echo "----(2.1) Only use main thread "
+echo "----(2.2) Two threads+main thread -t2 "
+echo "----(2.3) Default multithread algorithm"
+echo "----(2.4) Search many directories appeared at level 0"
+echo "----(2.5) -t switch error detect"
+echo "--(3) Others"
+echo "----(3.1) Be able to report the error in subdirs"
+echo "----(3.2) set -q to silent"
+echo "--(4) Combinations"
+echo "----(4.1) Case#1"
+echo "----(4.2) Case#2"
+echo
+echo
 echo "***************************************************"
 echo "*******Part 1 Bug Fixings in Assignment 1**********"
 echo "***************************************************"
@@ -1009,26 +973,520 @@ echo "Note: reading redirection and multiple redirection have been tested in sec
 echo "---------------------------------------------------"
 echo
 echo
+path=$(pwd)
+cp test000.in .test000.in
+mkdir ./dir
+mkdir ./dir/A
+mkdir ./dir/B
+mkdir ./dir/.A
+cp ./test000.in ./dir
+cp ./test001.in ./dir
+cp ./test000.in ./dir/A
+cp ./test001.in ./dir/B
+cp ./test000.in ./dir/.A/.test000.in
+mkdir ./dir/A/A
+mkdir ./dir/A/B
+mkdir ./dir/B/A
+mkdir ./dir/B/B
+cp ./test000.in ./dir/A/A
+cp ./test001.in ./dir/A/B
+cp ./test000.in ./dir/B/A
+cp ./test001.in ./dir/B/B
+mkdir ./dir/A/A/A
+mkdir ./dir/A/A/B
+mkdir ./dir/B/B/A
+mkdir ./dir/B/B/B
+cp ./test000.in ./dir/A/A/A
+cp ./test001.in ./dir/A/A/B
+cp ./test000.in ./dir/B/B/A
+cp ./test001.in ./dir/B/B/B
+
+cp -rf dir dir2
+
+ln -s $path/dir  ./dir/A/A/A/symtest1
+ln -s noexit ./dir/B/B/B/symtest2
+ln -s $path/test000.in ./dir/A/B/symtest3
+
+
+ln -s $path/dir2  ./dir2/A/A/A/symtest1
+ln -s noexit ./dir2/B/B/B/symtest2
+ln -s $path/test000.in ./dir2/A/B/symtest3
+
+echo "The test file and directory structure"
+echo "   |-.test000.in"
+echo "   |-test000.in"
+echo "   |-test001.in"
+echo "   |-test002.in"
+find ./dir -print | sed -e '/^\.$/d' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
+find ./dir2 -print | sed -e '/^\.$/d' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
+echo 
+echo "Notes:"
+ls -l  ./dir/A/A/A/symtest1
+ls -l ./dir/B/B/B/symtest2
+ls -l ./dir/A/B/symtest3
+
+ls -l  ./dir2/A/A/A/symtest1
+ls -l  ./dir2/B/B/B/symtest2
+ls -l  ./dir2/A/B/symtest3
+
 
 echo "***************************************************"
-echo "*******  Part 3 Assignment 2 Tests ****************"
+echo "*******Part3: Assignment2 Test      ***************"
 echo "***************************************************"
-echo
-echo
+
 echo "***************************************************"
-echo "*******(1) Basic Functionality Test   *************"
+echo "*******(1) Directory Search Test    ***************"
 echo "***************************************************"
-echo "(1.1) Main Thread Recursive Search "
+
+########################TEST 1 ###############################
+########################TEST 1.1##############################
 echo
+echo "1.1 Default Behavoir In Searching Directory "
+echo "purpose: The default behavior of directory search"
+echo "Expect:  recursive directory search, descending into directory"
+echo "         withouth limit, report any loop and error, follow the"
+echo "         any symbolic link, for simplicity, -t0 is set"
+
 test_section=311
-test_file1=dir1
-out_file=test$test_section.out
-err_file=test$test_section.err
-in_file1=$test_file1
-echo "COMMAND:./plcs -t0 -p -n2 this dir1>$out_file 2>$err_file"
-./plcs -t0 -p -n2 this dir1>$out_file 2>$err_file
+test_in=dir
+echo "Command: ./plcs -t0 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./plcs -t0 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err
 
 EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 14"
+echo "---------------------------------------------------"
+
+########################TEST 1.2##############################
+echo
+echo "1.2 -a option test "
+echo "1.2.1 -a option test only for directory "
+echo "purpose: Test the -a functionality"
+echo "Expect:  The subdirectory/filename under depth 0 starts with ."
+echo "         get searched"
+test_section=3121
+test_in=dir
+echo "Command: ./plcs -t0 -n2 -p -a This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./plcs -t0 -n2 -p -a This $test_in 1>test$test_section.out 2>test$test_section.err
+EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 16"
+echo "---------------------------------------------------"
+
+echo "1.2.2  turn off -a search level0 .file and dir "
+echo "purpose: level 0 files always get searched, no matter its filename"
+echo "Expect: level 0 filename has not correlation with -a switch"
+test_section=3122
+test_in1=dir
+test_in2=.test000.in
+echo "Command: ./plcs -t0 -n2 -p -a This $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err"
+ ./plcs -t0 -n2 -p This $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err
+EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 16"
+echo "---------------------------------------------------"
+
+
+########################TEST 1.3##############################
+echo
+echo "1.3 -d option test "
+echo
+echo "1.3.1 -d swtich error detect "
+echo "purpose: Test the -d error catching"
+echo "Expect:  Error report from -d"
+test_section=3131
+test_in=dir
+echo "Command: ./plcs -d-1 -d-5 This $test_in 1>test$test_section.out 2>test$test_section.err"
+  ./plcs -d-1 -d-5  This $test_in 1>test$test_section.out 2>test$test_section.err
+EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: FAILURE"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 0"
+echo "---------------------------------------------------"
+
+echo "1.3.2  -d0 test "
+echo "purpose: Only search level 0 files"
+echo "Expect:  report of the limit 0 is encountered"
+test_section=3132
+test_in1=dir
+test_in2=.test000.in
+test_in3=test000.in
+test_in4=test001.in
+test_in5=dir2
+echo "Command: ./plcs -t0 -n2 -p -d0 is $test_in5 $test_in4 $test_in3 $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err"
+./plcs -t0 -n2 -p -d0 is $test_in5 $test_in4 $test_in3 $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err
+EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 8"
+echo "---------------------------------------------------"
+
+echo "1.3.3  -d2 test "
+echo "purpose: Only search untill level 2 files"
+echo "Expect:  report of the limit 2 is encountered"
+test_section=3133
+test_in1=dir
+test_in2=.test000.in
+test_in3=test000.in
+test_in4=test001.in
+test_in5=dir2
+echo "Command: ./plcs -t0 -n2 -p -d2 is $test_in5 $test_in4 $test_in3 $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err"
+./plcs -t0 -n2 -p -d2 is $test_in5 $test_in4 $test_in3 $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err
+EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 28"
+echo "---------------------------------------------------"
+echo
+echo "1.3.4  -d limit and report full path "
+echo "purpose: Only search untill level 2 files"
+echo "Expect:  report of the limit 2 is encountered"
+test_section=3134
+test_in=dir/A/A
+echo "Command: ./plcs -t0 -n2 -p -d2 is  $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./plcs -t0 -n2 -p -d2 is  $test_in 1>test$test_section.out 2>test$test_section.err
+EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 8"
+
+########################TEST 1.4##############################
+echo
+echo "1.4 -f option related test "
+echo
+echo "1.4.1 -f switch to stop following soft link"
+echo "purpose: Test -f stop softlink following"
+echo "Expect:  Error report for symlink"
+test_section=3141
+test_in=dir
+echo "Command: ./plcs -t0 -n2 -p -f This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./plcs -t0 -n2 -p -f This $test_in 1>test$test_section.out 2>test$test_section.err
+EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 12"
+echo "---------------------------------------------------"
+
+echo "1.4.2 -f turn off -f to detect loop"
+echo " Already tested"
+echo "---------------------------------------------------"
+
+echo "1.4.3 -f turn off -f to detect loop but not necessary at symlink"
+echo "purpose: the loop is due to symlink but the link can be detected otherwhere"
+echo "Expect:  Error report for loop"
+test_section=3143
+test_in=dir/A/A
+echo "Command: ./plcs -t0 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./plcs -t0 -n2 -p  This $test_in 1>test$test_section.out 2>test$test_section.err
+EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 14"
+echo "---------------------------------------------------"
+echo
+echo "***************************************************"
+echo "*******  (2) Multithread Search     ***************"
+echo "***************************************************"
+echo
+########################TEST 2 ###############################
+########################TEST 2.1##############################
+
+echo
+echo "2.1 Only use main thread"
+echo "purpose: Only use main thread, which print recursively order"
+echo "Expect:  recursive directory search -t0 is set"
+
+test_section=321
+test_in=dir
+echo "Command: ./plcs -t0 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./plcs -t0 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err
+
+EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 14"
+echo "---------------------------------------------------"
+########################TEST 2.2##############################
+
+echo
+echo "2.2 Two threads+main thread -t2"
+echo "purpose: test -t2"
+echo "Expect:  printing disorder"
+
+test_section=321
+test_in=dir
+echo "Command: ./plcs -t2 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./plcs -t2 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err
+
+EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 14"
+echo "---------------------------------------------------"
+########################TEST 2.3##############################
+
+echo
+echo "2.3 Default [endless] thread"
+echo "purpose: test default multi thread behavior"
+echo "Expect:  printing more disordered, hopefully"
+
+test_section=323
+test_in=dir
+echo "Command: ./plcs -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./plcs -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err
+
+EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 14"
+echo "---------------------------------------------------"
+
+########################TEST 2.4##############################
+
+echo
+echo "2.4 Search many directories appeared at level 0"
+echo "purpose: test dynamic history stack pushing"
+echo "Expect:  Cannot imagine"
+
+test_section=324
+test_in1=dir
+test_in2=dir2
+test_in3=dir
+echo "Command: ./plcs -n2 -p This $test_in1 $test_in2 $test_in3 1>test$test_section.out 2>test$test_section.err"
+ ./plcs -n2 -p This $test_in1 $test_in2 $test_in3 1>test$test_section.out 2>test$test_section.err
+
+EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 40"
+echo "---------------------------------------------------"
+echo
+
+########################TEST 2.4##############################
+
+echo
+echo "2.5 -t switch error detect"
+echo "purpose: test -t illegal value"
+echo "Expect:  Cannot imagine"
+
+test_section=324
+test_in1=dir
+test_in2=dir2
+test_in3=dir
+echo "Command: ./plcs -n2 -p -t-2 -t-1 This $test_in1 $test_in2 $test_in3 1>test$test_section.out 2>test$test_section.err"
+ ./plcs -n2 -p -t-2 -t-1 This $test_in1 $test_in2 $test_in3 1>test$test_section.out 2>test$test_section.err
+
+EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: FAILURE"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 0"
+echo "---------------------------------------------------"
+echo
+
+
+echo "***************************************************"
+echo "*******  (3)   Others               ***************"
+echo "***************************************************"
+echo
+########################TEST 3 ###############################
+########################TEST 3.1##############################
+
+echo "setup: chmod 000 ./dir/test000.in "
+chmod 000 ./dir/test000.in
+
+echo
+echo "3.1 Be able to report the error in subdirs"
+echo "purpose: Report any error"
+
+test_section=331
+test_in=dir
+echo "Command: ./plcs  -n2 -p  This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./plcs  -n2 -p  This $test_in 1>test$test_section.out 2>test$test_section.err
+
+EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 12"
+echo "---------------------------------------------------"
+
+echo
+echo "3.2 set -q to silent but not silent level 0"
+echo "purpose: Report any error"
+
+test_section=332
+test_in1=dir
+test_in2=junk
+echo "Command: ./plcs  -n2 -p -q  This $test_in1 $test_in2 1>test$test_section.out 2>test$test_section.err"
+ ./plcs  -n2 -p  -q This $test_in1 $test_in2 1>test$test_section.out 2>test$test_section.err
+EXIT=$?
+echo
+echo "OUTPUT:"
+cat test$test_section.out
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l test$test_section.out | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 12"
+echo "---------------------------------------------------"
+
+
+
+echo "chmod 655 ./dir/test000.in"
+chmod 655 ./dir/test000.in
+
+
+echo "---------------------------------------------------"
+
+
+echo "***************************************************"
+echo "*******  (4 )  Combined Cases       ***************"
+echo "***************************************************"
+echo
+########################TEST 4 ###############################
+########################TEST 4.1##############################
+echo "(4.1) Combined Options case#1 "
+
+
+test_section=341
+test_file1=000
+test_file2=001
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file1=test$test_file1.in
+in_file2=test$test_file2.in
+in_file3=dir
+in_file4=dir2
+echo "COMMAND:./plcs -ipv -l50 -m3 -n7 -afq -d3 -t2 "e" - $in_file3 $in_file2 $in_file4 - <$in_file1 <$in_file1 >$out_file 2>$err_file"
+./plcs -ipv -l50 -m3 -n7 -afq -d3 -t2 "e" - $in_file3 $in_file2 $in_file4 - <$in_file1 <$in_file1 >$out_file 2>$err_file
+
+EXIT=$?
+
 echo "OUTPUT:"
 cat $out_file
 echo "STDERR:"
@@ -1038,14 +1496,38 @@ print_status $EXIT
 echo "EXPECTED EXIT: SUCCESS"
 echo "TOTAL OUTPUT LINES"
 wc -l $out_file | awk '{ print $1 }'
-echo "EXPTECTED OUTPUT LINES: 5"
+echo "EXPTECTED OUTPUT LINES: 27"
 echo "---------------------------------------------------"
 
+echo "(4.2) Combined Search case#2 "
 
+test_section=342
+test_file1=000
+out_file=test$test_section.out
+err_file=test$test_section.err
+in_file1=test$test_file1.in
+in_file2=dir/A/A/A
+in_file3=dir/A/A
+echo "COMMAND:./plcs -beipv -l50 -m8 -n7 -t6 "test" $in_file3 $in_file2 $in_file1  >$out_file 2>$err_file"
+./plcs -bepf -l50 -m8 -n7 -t6 "test" $in_file3 $in_file2 $in_file1 >$out_file 2>$err_file
 
-#./plcs -p -t10 is testdir1/ testdir2/
-#rm -rf dir
-#rm -rf dir2
+EXIT=$?
+
+echo "OUTPUT:"
+cat $out_file
+echo "STDERR:"
+cat test$test_section.err
+echo
+print_status $EXIT
+echo "EXPECTED EXIT: SUCCESS"
+echo "TOTAL OUTPUT LINES"
+wc -l $out_file | awk '{ print $1 }'
+echo "EXPTECTED OUTPUT LINES: 4"
+echo "---------------------------------------------------"
+
+make clean
 rm *.err
 rm *.out
-make clean
+rm -rf dir
+rm -rf dir2
+rm .test000.in

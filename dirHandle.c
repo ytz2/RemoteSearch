@@ -356,7 +356,7 @@ int walk_recur(Node* current) {
 			else if ((prev = stack_find_history(stk, current, next->path))
 					!= NULL ) {
 				if (!(options_flags&NO_ERR_MSG)) {
-					fprintf(stderr, "%s is detected to cause a loop\n",
+					fprintf(stderr, "%d depth: %s\n",next->depth,
 							full_path);
 					/*
 					 * go back to print all the loop elements in the loop branch
@@ -364,8 +364,7 @@ int walk_recur(Node* current) {
 					 */
 					for (temp = current; temp != prev->prev; temp =
 							temp->prev) {
-						fprintf(stderr, "%*s\n",
-								3 * temp->depth + (int) strlen(temp->path),
+						fprintf(stderr, "%*c%d depth: %s\n",3*temp->depth,' ',temp->depth,
 								temp->path);
 						fflush(stderr);
 					}
@@ -396,11 +395,6 @@ int walk_recur(Node* current) {
  */
 void* search_dir(void *para) {
 	long err = 0;
-
-	/*increment the counter when firstly enter*/
-	pthread_mutex_lock(&counter_lock);
-	alive_threads++;
-	pthread_mutex_unlock(&counter_lock);
 
 	err = walk_recur((Node*) para);
 
@@ -441,6 +435,11 @@ int walk_to_next(Node* next) {
 		 * however, when it is available, always use a new thread
 		 */
 		err = pthread_create(&id, &next->stk->attr, search_dir, (void*) next);
+		/*increment the counter when thread created*/
+		pthread_mutex_lock(&counter_lock);
+		if (err==0)
+			alive_threads++;
+		pthread_mutex_unlock(&counter_lock);
 		if (err != 0 && !(options_flags&NO_ERR_MSG))
 			fprintf(stderr, "pthread_create: %s\n", strerror(err));
 	}
