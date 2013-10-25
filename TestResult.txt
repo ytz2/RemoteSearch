@@ -1,5 +1,5 @@
 Yanhua Liu (ytz2)
-Tests for CS820 Assignment1
+Tests for CS820 Assignment2
 
 Test Under Enviroment:
 Darwin
@@ -1179,12 +1179,12 @@ The test file and directory structure
    |---test001.in
 
 Notes:
-lrwxr-xr-x  1 yanhualiu  staff  40 Oct 24 23:47 ./dir/A/A/A/symtest1 -> /Users/yanhualiu/Desktop/cs820/cs820/dir
-lrwxr-xr-x  1 yanhualiu  staff  6 Oct 24 23:47 ./dir/B/B/B/symtest2 -> noexit
-lrwxr-xr-x  1 yanhualiu  staff  47 Oct 24 23:47 ./dir/A/B/symtest3 -> /Users/yanhualiu/Desktop/cs820/cs820/test000.in
-lrwxr-xr-x  1 yanhualiu  staff  41 Oct 24 23:47 ./dir2/A/A/A/symtest1 -> /Users/yanhualiu/Desktop/cs820/cs820/dir2
-lrwxr-xr-x  1 yanhualiu  staff  6 Oct 24 23:47 ./dir2/B/B/B/symtest2 -> noexit
-lrwxr-xr-x  1 yanhualiu  staff  47 Oct 24 23:47 ./dir2/A/B/symtest3 -> /Users/yanhualiu/Desktop/cs820/cs820/test000.in
+lrwxr-xr-x  1 yanhualiu  staff  40 Oct 24 23:48 ./dir/A/A/A/symtest1 -> /Users/yanhualiu/Desktop/cs820/cs820/dir
+lrwxr-xr-x  1 yanhualiu  staff  6 Oct 24 23:48 ./dir/B/B/B/symtest2 -> noexit
+lrwxr-xr-x  1 yanhualiu  staff  47 Oct 24 23:48 ./dir/A/B/symtest3 -> /Users/yanhualiu/Desktop/cs820/cs820/test000.in
+lrwxr-xr-x  1 yanhualiu  staff  41 Oct 24 23:48 ./dir2/A/A/A/symtest1 -> /Users/yanhualiu/Desktop/cs820/cs820/dir2
+lrwxr-xr-x  1 yanhualiu  staff  6 Oct 24 23:48 ./dir2/B/B/B/symtest2 -> noexit
+lrwxr-xr-x  1 yanhualiu  staff  47 Oct 24 23:48 ./dir2/A/B/symtest3 -> /Users/yanhualiu/Desktop/cs820/cs820/test000.in
 ***************************************************
 *******Part3: Assignment2 Test      ***************
 ***************************************************
@@ -1547,18 +1547,18 @@ Command: ./plcs -t2 -n2 -p This dir 1>test321.out 2>test321.err
 OUTPUT:
 /Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/dir/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/dir/A/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/dir/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir/A/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/dir/A/test000.in:  2: This is a basit TEST
 STDERR:
 5 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/symtest1
             4 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A
@@ -1585,23 +1585,23 @@ OUTPUT:
 /Users/yanhualiu/Desktop/cs820/cs820/dir/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  2: This is a basit TEST
 STDERR:
 5 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/symtest1
             4 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A
          3 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A
       2 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A
-stat(): /Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/B/symtest2 No such file or directory
    1 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir
+stat(): /Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/B/symtest2 No such file or directory
 
 EXIT STATUS:
 SUCCESS
@@ -1621,59 +1621,60 @@ OUTPUT:
 /Users/yanhualiu/Desktop/cs820/cs820/dir/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/dir2/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir2/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/A/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/dir/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir2/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/dir2/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/A/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/A/A/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/dir/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/B/A/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/B/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/B/B/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/B/B/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir2/A/A/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir2/A/A/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/A/A/A/test000.in:  2: This is a basit TEST
 STDERR:
+stat(): /Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/B/symtest2 No such file or directory
 5 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/symtest1
             4 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A
          3 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A
       2 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A
    1 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir
-stat(): /Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/B/symtest2 No such file or directory
-/Users/yanhualiu/Desktop/cs820/cs820/test000.in: Not a directory
 5 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/symtest1
-            4 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A
-stat(): /Users/yanhualiu/Desktop/cs820/cs820/dir2/B/B/B/symtest2 No such file or directory
 5 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir2/A/A/A/symtest1
+            4 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A
             4 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir2/A/A/A
-         3 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A
 stat(): /Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/B/symtest2 No such file or directory
+         3 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A
          3 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir2/A/A
       2 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A
+stat(): /Users/yanhualiu/Desktop/cs820/cs820/dir2/B/B/B/symtest2 No such file or directory
       2 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir2/A
    1 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir
    1 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir2
@@ -1682,7 +1683,7 @@ EXIT STATUS:
 SUCCESS
 EXPECTED EXIT: SUCCESS
 TOTAL OUTPUT LINES
-40
+42
 EXPTECTED OUTPUT LINES: 40
 ---------------------------------------------------
 
@@ -1724,18 +1725,18 @@ OUTPUT:
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/A/test000.in:  2: This is a basit TEST
+/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:  1: This Is a basic test
+/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:  2: This is a basit TEST
 STDERR:
 /Users/yanhualiu/Desktop/cs820/cs820/dir/test000.in: Permission denied
 5 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/symtest1
             4 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A
+stat(): /Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/B/symtest2 No such file or directory
          3 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A
       2 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir/A
    1 depth: /Users/yanhualiu/Desktop/cs820/cs820/dir
-stat(): /Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/B/symtest2 No such file or directory
 
 EXIT STATUS:
 SUCCESS
@@ -1754,8 +1755,6 @@ OUTPUT:
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:  2: This is a basit TEST
-/Users/yanhualiu/Desktop/cs820/cs820/test000.in:  1: This Is a basic test
-/Users/yanhualiu/Desktop/cs820/cs820/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  1: This Is a basic test
 /Users/yanhualiu/Desktop/cs820/cs820/dir/B/A/test000.in:  2: This is a basit TEST
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:  1: This Is a basic test
@@ -1769,7 +1768,7 @@ EXIT STATUS:
 SUCCESS
 EXPECTED EXIT: SUCCESS
 TOTAL OUTPUT LINES
-12
+10
 EXPTECTED OUTPUT LINES: 12
 ---------------------------------------------------
 chmod 655 ./dir/test000.in
@@ -1787,9 +1786,6 @@ OUTPUT:
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/B/test001.in:       5: singing bird is a good bird
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/B/test001.in:       6: SingING bird Is a good Bird
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/B/test001.in:       7: singing
-/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/test001.in:       5: singing bird is a good bird
-/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/test001.in:       6: SingING bird Is a good Bird
-/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/test001.in:       7: singing
 /Users/yanhualiu/Desktop/cs820/cs820/dir/B/test001.in:       5: singing bird is a good bird
 /Users/yanhualiu/Desktop/cs820/cs820/dir/B/test001.in:       6: SingING bird Is a good Bird
 /Users/yanhualiu/Desktop/cs820/cs820/dir/B/test001.in:       7: singing
@@ -1799,15 +1795,18 @@ OUTPUT:
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/A/B/test001.in:       5: singing bird is a good bird
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/A/B/test001.in:       6: SingING bird Is a good Bird
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/A/B/test001.in:       7: singing
-/Users/yanhualiu/Desktop/cs820/cs820/dir2/test001.in:       5: singing bird is a good bird
-/Users/yanhualiu/Desktop/cs820/cs820/dir2/test001.in:       6: SingING bird Is a good Bird
-/Users/yanhualiu/Desktop/cs820/cs820/dir2/test001.in:       7: singing
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/B/B/test001.in:       5: singing bird is a good bird
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/B/B/test001.in:       6: SingING bird Is a good Bird
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/B/B/test001.in:       7: singing
+/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/test001.in:       5: singing bird is a good bird
+/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/test001.in:       6: SingING bird Is a good Bird
+/Users/yanhualiu/Desktop/cs820/cs820/dir/B/B/test001.in:       7: singing
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/B/test001.in:       5: singing bird is a good bird
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/B/test001.in:       6: SingING bird Is a good Bird
 /Users/yanhualiu/Desktop/cs820/cs820/dir2/B/test001.in:       7: singing
+/Users/yanhualiu/Desktop/cs820/cs820/dir2/test001.in:       5: singing bird is a good bird
+/Users/yanhualiu/Desktop/cs820/cs820/dir2/test001.in:       6: SingING bird Is a good Bird
+/Users/yanhualiu/Desktop/cs820/cs820/dir2/test001.in:       7: singing
 STDERR:
 
 EXIT STATUS:
@@ -1820,8 +1819,8 @@ EXPTECTED OUTPUT LINES: 27
 (4.2) Combined Search case#2 
 COMMAND:./plcs -beipv -l50 -m8 -n7 -t6 test dir/A/A dir/A/A/A test000.in  >test342.out 2>test342.err
 OUTPUT:
-/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:       7: test
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:       7: test
+/Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/test000.in:       7: test
 /Users/yanhualiu/Desktop/cs820/cs820/dir/A/A/A/test000.in:       7: test
 /Users/yanhualiu/Desktop/cs820/cs820/test000.in:       7: test
 STDERR:
