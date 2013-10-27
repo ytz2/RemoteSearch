@@ -77,9 +77,15 @@ void print_line(int lineno, char* realpath, char* str) {
 
 /*
  * function to create the key
+ * to drop the SunOS bracket warning, hmmm
  */
 static pthread_key_t line_buffer_key; // key to bind a line buffer
+#ifdef __sun__
+static pthread_once_t init_done={PTHREAD_ONCE_INIT}; // once key
+#else
 static pthread_once_t init_done=PTHREAD_ONCE_INIT; // once key
+#endif
+
 void thread_init()
 {
 	pthread_key_create(&line_buffer_key,free);

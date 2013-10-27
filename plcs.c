@@ -285,7 +285,6 @@ int main(int argc, char *argv[]) {
 	}
 	atexit(exit_func2);
 	pthread_exit(NULL);
-
 } /* main */
 
 // function to clean up

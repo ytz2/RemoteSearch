@@ -8,16 +8,23 @@ CC=gcc
 UNAME_S := $(shell uname -s)
 
 # CFLAGS
-ifeq    ($(OSTYPE),SunOS)
+ifeq    ($(UNAME_S),SunOS)
 	CFLAGS= -Wall -O -g
 else
 	CFLAGS=  -Wall -O -g -Wextra
 endif
 
+
 # PFLAGS
 ifeq    ($(UNAME_S),Darwin)
 	PFLAGS  = 
-else
+endif
+
+ifeq    ($(UNAME_S),SunOS)
+	PFLAGS  = 
+endif
+
+ifeq      ($(UNAME_S),Linux)
 	PFLAGS  = -lpthread
 endif
 

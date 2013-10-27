@@ -81,7 +81,7 @@ void clear_node(Node* node) {
 		free(node->path);
 	free(node);
 }
-/*/*
+/*/
  * Initialize a stack
  */
 int stack_init(stack *st) {
@@ -119,10 +119,10 @@ int stack_destroy(stack *st) {
  */
 int stack_push(stack *st, Node *current, Node *next) {
 	/* do some safe check */
+	int err;
 	if (current == NULL)
 		return -1;
 
-	int err;
 	if ((err = pthread_rwlock_wrlock(&st->s_lock)) != 0) {
 		if (!(options_flags & NO_ERR_MSG))
 			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
