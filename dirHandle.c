@@ -416,7 +416,6 @@ int walk_recur(Node* current) {
 	if (entry != NULL)
 		free(entry);
 	stack_job_done(stk, current);
-	/* now list the dir */
 	return 0;
 }
 

@@ -34,7 +34,7 @@
 #define MAX_COLS            16
 #define MAX_FILES           1024
 #define STREAM_REDIRECT     "-"
-
+#define MAX_STACKS 1000 /* The size of stack of stacks */
 /* Function Utilities*/
 
 /* Scans the string pointed to by optarg and tries to convert it to a number.

@@ -5,18 +5,20 @@
 
 CC=gcc
 
-UNAMES_S := $(shell uname -s)
+UNAME_S := $(shell uname -s)
 
-ifeq ($ (UNAMES_S),solaris)
+# CFLAGS
+ifeq    ($(OSTYPE),SunOS)
 	CFLAGS= -Wall -O -g
 else
 	CFLAGS=  -Wall -O -g -Wextra
 endif
 
-ifeq ($ (UNAMES_S),Darwin)
-	PFLAGS= 
+# PFLAGS
+ifeq    ($(UNAME_S),Darwin)
+	PFLAGS  = 
 else
-	PFLAGS= 
+	PFLAGS  = -lpthread
 endif
 
 

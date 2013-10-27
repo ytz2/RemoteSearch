@@ -30,7 +30,6 @@
  * must include "global.h"
  */
 
-#define MAX_STACKS 100 /* The size of stack of stacks */
 unsigned int options_flags; /* work with switch options_flags*/
 int shift_table[MAX_ASCII]; /* shift table*/
 int line_buffer_size; /* work with -l number*/
