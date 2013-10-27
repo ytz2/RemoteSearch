@@ -14,7 +14,7 @@ else
 endif
 
 ifeq ($ (UNAMES_S),Darwin)
-	PFLAGS=
+	PFLAGS= 
 else
 	PFLAGS= 
 endif
@@ -42,4 +42,4 @@ str_search.o:  str_search.h str_search.c ospenv.h rpath.h
 	$(CC) $(CFLAGS) -c  str_search.c
 
 clean:
-	rm -rf *.o *~
+	rm -rf *.o *~ plcs

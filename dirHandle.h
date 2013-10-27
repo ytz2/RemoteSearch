@@ -46,6 +46,7 @@ struct STACK {
 	pthread_attr_t attr;
 };
 
+
 /*
  * make a history stack node
  */
@@ -81,7 +82,7 @@ int stack_job_done(stack *st, Node *current);
 /*
  *  find the realpath which used to appear in the tree
  */
-Node* stack_find_history(stack *st, Node* current, char *path);
+Node* stack_find_history(stack *st, Node* current, char *path,char *fullpath);
 
 /*
  * get the full path from the realpath and d_name

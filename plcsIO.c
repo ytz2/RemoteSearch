@@ -160,7 +160,7 @@ void search_file(char* filename, char *search_str,int flag)
 	FILE *fptr;
 	if ((fptr = fopen(filename, "r")) == NULL) {
 		if(flag==0 || (flag==1 && !(options_flags&NO_ERR_MSG)))
-		perror(filename);
+			perror(filename);
 	} else {
 		search_stream(fptr, filename, search_str);
 		fclose(fptr);
