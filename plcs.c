@@ -280,11 +280,13 @@ int main(int argc, char *argv[]) {
 					walk_to_next(temp_node);
 				}
 			}
+			continue;
 		}
 		search_file(temp_str,search_pattern,0);
 	}
 	atexit(exit_func2);
 	pthread_exit(NULL);
+	return 0;
 } /* main */
 
 // function to clean up

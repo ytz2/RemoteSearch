@@ -213,7 +213,7 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 	}
 
 	if (temp != NULL && !(options_flags & NO_ERR_MSG)) {
-		fprintf(stderr, "%d depth: %s\n", current->depth + 1, fullpath);
+		fprintf(stderr, "%d depth: %s detect a loop\n", current->depth + 1, fullpath);
 		/*
 		 * go back to print all the loop elements in the loop branch
 		 * in the history stack
@@ -331,6 +331,7 @@ int walk_recur(Node* current) {
 
 		// initialize a flag to indicate whether it is a sym_link
 		sym_link_flag = -2;
+
 		/* neglect the . and .. */
 		if (!strcmp(result->d_name, ".") || !strcmp(result->d_name, ".."))
 			continue;
@@ -352,7 +353,6 @@ int walk_recur(Node* current) {
 			free(full_path);
 			continue;
 		}
-
 		/* deal with symlink -f*/
 		if (S_ISLNK(st.st_mode)) {
 			/* if -f is set, do not follow link */
@@ -448,39 +448,43 @@ void* search_dir(void *para) {
 int walk_to_next(Node* next) {
 	pthread_t id; // thread id
 	int err;
-	err = 0;
+	err = 1;
+
 	/*if the thread number limit is 0, use main thread*/
 	if (thread_limits == 0) {
 		return walk_recur(next);
 	}
 
-	/* the threads number is enough, cannot create a thread*/
-	if (thread_limits > 0 && alive_threads >= thread_limits)
-		err = 1;
-	else {
-		/*
-		 * if thread_limits is not set always spawn a thread
-		 * or if thread# does not exceed limit
-		 * spawn a thread, if cannot create a thread, issue
-		 * an error message and let the parent thread do the "left" recursion
-		 * however, when it is available, always use a new thread
-		 */
+	/* if -t is not defined, create a thread if possible */
+	if (thread_limits < 0)
+	{
 		err = pthread_create(&id, &next->stk->attr, search_dir, (void*) next);
+		if (err!=0 && !(options_flags & NO_ERR_MSG))
+			perror("Pthread");
 	}
-	/*if it forked a thread, do some counter increment*/
-	if (err == 0) {
-		if (thread_limits > 0) {
-			err = pthread_mutex_lock(&counter_lock);
-			alive_threads++;
-			pthread_mutex_unlock(&counter_lock);
+	else // thread_limits>0
+	{
+		/*lock the counter*/
+		pthread_mutex_lock(&counter_lock);
+		/* check if the alive threads is below the thread limits */
+		if (alive_threads < thread_limits)
+		{
+			err = pthread_create(&id, &next->stk->attr, search_dir,
+					(void*) next);
+			if (err!=0 && !(options_flags & NO_ERR_MSG))
+			{
+				perror("Pthread");
+			}
 		}
-		return 0;
-	} else {
-		/*increment the counter when thread created*/
-		if (!(options_flags & NO_ERR_MSG))
-			fprintf(stderr, "pthread_create: %s\n", strerror(err));
-		return walk_recur(next);
+		/* if thread creation succeed, increment the alive threads #*/
+		if (err == 0)
+			alive_threads++;
+		pthread_mutex_unlock(&counter_lock);
 	}
+
+	/* if thread creation failed, issue an error and continue with the current thread */
+	if (err != 0)
+		return walk_recur(next);
 
 	return 0;
 }
