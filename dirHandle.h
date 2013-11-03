@@ -41,11 +41,19 @@ typedef struct NODE {
  * in order to provide a better interface
  */
 struct STACK {
+	/*the head or root is useless, but leave it here in case useful tomorrow*/
 	Node *head;
+	/*
+	 * the stack is protected by rwlock, since most of time is not doing push
+	 * but doing the searching whether a realpath used to appear
+	 */
 	pthread_rwlock_t s_lock;
+	/*
+	 * the attribute will be set to be detached to make sure onece
+	 * a thread finished, the resource of that thread releases in time.
+	 */
 	pthread_attr_t attr;
 };
-
 
 /*
  * make a history stack node
@@ -82,7 +90,7 @@ int stack_job_done(stack *st, Node *current);
 /*
  *  find the realpath which used to appear in the tree
  */
-Node* stack_find_history(stack *st, Node* current, char *path,char *fullpath);
+Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath);
 
 /*
  * get the full path from the realpath and d_name
@@ -109,7 +117,7 @@ void* search_dir(void *para);
 
 /*
  * another wrapper function, it will
- * test if alive threads, if the alive threads
+ * test if the alive threads
  * number is less than the limit, then do thread_create
  * else, use walk_recur
  */

@@ -13,7 +13,6 @@
 
 #include"str_search.h"
 
-//#define MYDBG_str_search
 
 /*build the shift table as defined in str_search.h
  *If the flag is set on, then insensitive shift table is built
@@ -45,10 +44,10 @@ void build_shift_table(int* table, char* pattern, unsigned int flag) {
  */
 int cmp_char_arr(char* a, char *b, int len, unsigned int flag) {
 
-	if (flag==0)
-		return (strncmp(a,b,len)==0);
+	if (flag == 0)
+		return (strncmp(a, b, len) == 0);
 	else
-		return (strncasecmp(a,b,len)==0);
+		return (strncasecmp(a, b, len) == 0);
 }/*cmp_char_arr*/
 
 /*
@@ -128,22 +127,5 @@ int exact_match(char* buffer, char *search_string, unsigned int flag) {
 	return cmp_char_arr(buffer, search_string, search_len, flag);
 }
 
-/*
- * THE FOLLOWING CODE IS FOR TESTING PURPOSE
- * TO ENABLE IT, DEFINE MYDBG AND gcc -Wall file
- * TO DISABLE IT, COMMENT MYDBG OUT
- */
 
-#if defined(MYDBG_str_search)
-int main(void) {
-	char *str="ss";
-	char *str1 = "afasfsslajflaj";
-	int table[MAX_ASCII];
-	build_shift_table(table, str, 1);
-	//test bm algorithm
-	printf("%s\n",str1);
-	printf("%s\n",(boyer_moore(str1,str,table,1)?"found":"no"));
-	return 0;
-}
-#endif
 

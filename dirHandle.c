@@ -18,9 +18,9 @@
  */
 
 /*static void dbg(const char* func, const char* path, int count) {
-	fprintf(stderr, "%s: %s is %d \n", func, path, count);
-	fflush(stderr);
-}*/
+ fprintf(stderr, "%s: %s is %d \n", func, path, count);
+ fflush(stderr);
+ }*/
 
 /*global lock for counter*/
 static pthread_mutex_t counter_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -36,8 +36,8 @@ Node* make_node(char *dname, int depth, stack *stk) {
 	char* rptr, *memptr;
 
 	errno = 0;
-	rptr=NULL;
-	memptr=NULL;
+	rptr = NULL;
+	memptr = NULL;
 
 	/* use full path name to get real path */
 	if ((rptr = get_realpath(dname, &memptr)) == NULL) {
@@ -213,7 +213,8 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 	}
 
 	if (temp != NULL && !(options_flags & NO_ERR_MSG)) {
-		fprintf(stderr, "%d depth: %s detect a loop\n", current->depth + 1, fullpath);
+		fprintf(stderr, "%d depth: %s detect a loop\n", current->depth + 1,
+				fullpath);
 		/*
 		 * go back to print all the loop elements in the loop branch
 		 * in the history stack
@@ -276,7 +277,7 @@ int is_sym_dir(char* full_name) {
 	if (stat(full_name, &st) == -1) {
 		/* if the link does not exist, issue error*/
 		if (!(options_flags & NO_ERR_MSG)) {
-			fprintf(stderr, "stat(): %s %s\n", full_name, strerror(errno));
+			perror(full_name);
 		}
 		val = -1;
 	} else if (S_ISDIR(st.st_mode))
@@ -441,7 +442,7 @@ void* search_dir(void *para) {
 }
 /*
  * another wrapper function, it will
- * test if alive threads, if the alive threads
+ * test if the alive threads
  * number is less than the limit, then do thread_create
  * else, use walk_recur
  */
@@ -456,23 +457,19 @@ int walk_to_next(Node* next) {
 	}
 
 	/* if -t is not defined, create a thread if possible */
-	if (thread_limits < 0)
-	{
+	if (thread_limits < 0) {
 		err = pthread_create(&id, &next->stk->attr, search_dir, (void*) next);
-		if (err!=0 && !(options_flags & NO_ERR_MSG))
+		if (err != 0 && !(options_flags & NO_ERR_MSG))
 			perror("Pthread");
-	}
-	else // thread_limits>0
+	} else // thread_limits>0
 	{
 		/*lock the counter*/
 		pthread_mutex_lock(&counter_lock);
 		/* check if the alive threads is below the thread limits */
-		if (alive_threads < thread_limits)
-		{
+		if (alive_threads < thread_limits) {
 			err = pthread_create(&id, &next->stk->attr, search_dir,
 					(void*) next);
-			if (err!=0 && !(options_flags & NO_ERR_MSG))
-			{
+			if (err != 0 && !(options_flags & NO_ERR_MSG)) {
 				perror("Pthread");
 			}
 		}

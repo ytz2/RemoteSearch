@@ -31,7 +31,7 @@ int search_str(char* buffer, char* search_str) {
 	insensitive = 0;
 
 	/* check if it is null */
-	if (buffer == NULL || search_str == NULL ) {
+	if (buffer == NULL || search_str == NULL) {
 		fprintf(stderr, "Null String in search_str function\n");
 		exit(1);
 	}
@@ -61,14 +61,14 @@ int search_str(char* buffer, char* search_str) {
  */
 void print_line(int lineno, char* realpath, char* str) {
 	const char *temp1, *temp2;
-	if (realpath == NULL ) {
+	if (realpath == NULL) {
 		temp1 = "";
 		temp2 = "";
 	} else {
 		temp1 = realpath;
 		temp2 = ": ";
 	}
-	if (column_number>0)
+	if (column_number > 0)
 		printf("%s%s%*d: %s\n", temp1, temp2, column_number, lineno, str);
 	else
 		printf("%s%s%s\n", temp1, temp2, str);
@@ -77,20 +77,19 @@ void print_line(int lineno, char* realpath, char* str) {
 
 /*
  * function to create the key
- * to drop the SunOS bracket warning, hmmm
+ * to depreciate the SunOS bracket warning, use some
+ * testing macro
  */
 static pthread_key_t line_buffer_key; // key to bind a line buffer
 #ifdef __sun__
-static pthread_once_t init_done={PTHREAD_ONCE_INIT}; // once key
+static pthread_once_t init_done= {PTHREAD_ONCE_INIT}; // once key
 #else
-static pthread_once_t init_done=PTHREAD_ONCE_INIT; // once key
+static pthread_once_t init_done = PTHREAD_ONCE_INIT; // once key
 #endif
 
-void thread_init()
-{
-	pthread_key_create(&line_buffer_key,free);
+void thread_init() {
+	pthread_key_create(&line_buffer_key, free);
 }
-
 
 /*
  * search_stream
@@ -102,22 +101,21 @@ void thread_init()
 void search_stream(FILE *fptr, char* filename, char* objstr) {
 	int lineno;
 	int output_lineno;
-	char* rptr, *memptr,*any_line_buffer;
+	char* rptr, *memptr, *any_line_buffer;
 	/*initialize the rptr*/
 	rptr = NULL;
-	memptr=NULL;
-	output_lineno=1;
+	memptr = NULL;
+	output_lineno = 1;
 
 	/*
 	 * create the key
 	 */
-	pthread_once(&init_done,thread_init);
-	any_line_buffer=pthread_getspecific(line_buffer_key);
+	pthread_once(&init_done, thread_init);
+	any_line_buffer = pthread_getspecific(line_buffer_key);
 	/* allocate memory to buffer*/
-	if (any_line_buffer==NULL)
-	{
+	if (any_line_buffer == NULL) {
 		any_line_buffer = (char*) malloc(line_buffer_size + 1);
-		pthread_setspecific(line_buffer_key,any_line_buffer);
+		pthread_setspecific(line_buffer_key, any_line_buffer);
 	}
 
 	/*
@@ -125,14 +123,16 @@ void search_stream(FILE *fptr, char* filename, char* objstr) {
 	 * get the realpath for printing purpose
 	 */
 	if ((fptr != stdin) && (options_flags & SHOW_PATH))
-		rptr = get_realpath(filename,&memptr);
+		rptr = get_realpath(filename, &memptr);
 
-	/*process each line in the input*/
-	errno=0;
-	for (lineno = 1;!feof(fptr) && fgets(any_line_buffer, line_buffer_size + 1, fptr)!=NULL ; lineno++) {
-		if (max_line_number>=0 && output_lineno>max_line_number)
+	/*process each line in the input*/errno = 0;
+	for (lineno = 1;
+			!feof(fptr)
+					&& fgets(any_line_buffer, line_buffer_size + 1, fptr)
+							!= NULL; lineno++) {
+		if (max_line_number >= 0 && output_lineno > max_line_number)
 			break;
-		if (errno!=0 || ferror(fptr)) {
+		if (errno != 0 || ferror(fptr)) {
 			/*error check*/
 			if (fptr == stdin)
 				perror("stdin");
@@ -143,13 +143,13 @@ void search_stream(FILE *fptr, char* filename, char* objstr) {
 		}
 		trim_line(any_line_buffer);
 		/*if get the match, print the line*/
-		if (search_str(any_line_buffer, objstr)){
+		if (search_str(any_line_buffer, objstr)) {
 			print_line(lineno, rptr, any_line_buffer);
 			output_lineno++;
 		}
 	}
 	/*free the real path memory*/
-	if (memptr!=NULL)
+	if (memptr != NULL)
 		free(memptr);
 	/*reset the stream for further redirection*/
 	rewind(fptr);
@@ -159,13 +159,14 @@ void search_stream(FILE *fptr, char* filename, char* objstr) {
  * search_file
  * accept a filename and a search string to perform a search
  * but add another flag to indicate it is in sub directory
- * tow work well with -q
+ * tow work well with -q, the flag is not passed to search_stream
+ * since when dealing with subdirectories, the stat will follow all
+ * the way down and if any problem occurs, stat can issue error
  */
-void search_file(char* filename, char *search_str,int flag)
-{
+void search_file(char* filename, char *search_str, int flag) {
 	FILE *fptr;
 	if ((fptr = fopen(filename, "r")) == NULL) {
-		if(flag==0 || (flag==1 && !(options_flags&NO_ERR_MSG)))
+		if (flag == 0 || (flag == 1 && !(options_flags & NO_ERR_MSG)))
 			perror(filename);
 	} else {
 		search_stream(fptr, filename, search_str);

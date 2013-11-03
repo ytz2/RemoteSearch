@@ -21,10 +21,7 @@
 #include <string.h>
 #include <limits.h>
 
-
-
 #define PATH_MAX_GUESS 8192
-
 
 /*
  * This function is edited from the version in Steven's book page 50

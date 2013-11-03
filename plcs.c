@@ -43,11 +43,13 @@ int max_dir_depth; /* work with -d number */
  * the reason to keep that is I have to keep the history stacks
  * in heap for unfinished threads, when the last pthread_exit is
  * called, use atexit to clean them
+ * the other choice is to let the root node clean up for themself
+ * I am more comfortable with the first one
  */
 stack* stacks[MAX_STACKS];
 
 /*very simple operations of stack*/
-int stacks_top=-1;
+int stacks_top = -1;
 void push_stacks(stack *val);
 void clear_stacks();
 // function to clean up the string bufferand will be called by atexit()
@@ -69,8 +71,8 @@ int main(int argc, char *argv[]) {
 	line_buffer_size = DEFAULT_LINE_BUFFER;
 	max_line_number = -1;
 	column_number = -1;
-	thread_limits=-1;
-	max_dir_depth=-1;
+	thread_limits = -1;
+	max_dir_depth = -1;
 	state = 1;
 	search_pattern = NULL;
 	monitor_state = 0;
@@ -80,8 +82,10 @@ int main(int argc, char *argv[]) {
 	while ((c = getopt(argc, argv, OPTIONS)) != -1) {
 		switch (c) {
 		case 'h': /* print help info */
-			printf("Usage: plcs [options] search_string [list of input file/directory names]\n");
-			printf("Search search_string in Provided File,Directory or Standard input\n");
+			printf(
+					"Usage: plcs [options] search_string [list of input file/directory names]\n");
+			printf(
+					"Search search_string in Provided File,Directory or Standard input\n");
 			printf("Example: ./plcs hello main.c\n");
 			printf("-h: this is help information\n");
 			printf("-b: select lines only matched at begin (default OFF)\n");
@@ -95,11 +99,15 @@ int main(int argc, char *argv[]) {
 			printf("-m50: set the maximum number of lines to\n "
 					"\tbe processes to 50 \n");
 			printf("-n8: set the column of format number to 8 (max is 15)\n");
-			printf("-a: process the files or directories in sub directories starts with '.'\n");
+			printf(
+					"-a: process the files or directories in sub directories starts with '.'\n");
 			printf("-f: do not follow the symbolic link\n");
-			printf("-q: silent the error report when processing sub directories\n");
-			printf("-d5: the recursive descent depth into directories is limited to 5\n");
-			printf("-t3: to limit to 3 threads when processing sub directories\n");
+			printf(
+					"-q: silent the error report when processing sub directories\n");
+			printf(
+					"-d5: the recursive descent depth into directories is limited to 5\n");
+			printf(
+					"-t3: to limit to 3 threads when processing sub directories\n");
 			return 0;
 		case 'b': /* turn match at begin on */
 			options_flags |= AT_BEGIN;
@@ -152,7 +160,7 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'n': /* set column number to print line number */
 			monitor_state = scan_switch_number(c, &column_number);
-			if (column_number >= MAX_COLS || column_number<=0) {
+			if (column_number >= MAX_COLS || column_number <= 0) {
 				fprintf(stderr, "Illegal numeric value \"%d\" for switch -n\n",
 						column_number);
 				column_number = -1;
@@ -165,7 +173,7 @@ int main(int argc, char *argv[]) {
 			break;
 		case 't': /* set the line depth */
 			monitor_state = scan_switch_number(c, &thread_limits);
-			if (thread_limits<0) {
+			if (thread_limits < 0) {
 				fprintf(stderr, "Illegal numeric value \"%d\" for switch -d\n",
 						thread_limits);
 				thread_limits = -1;
@@ -178,7 +186,7 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'd': /* set column number to print line number */
 			monitor_state = scan_switch_number(c, &max_dir_depth);
-			if (max_dir_depth<0) {
+			if (max_dir_depth < 0) {
 				fprintf(stderr, "Illegal numeric value \"%d\" for switch -n\n",
 						max_dir_depth);
 				max_dir_depth = -1;
@@ -241,80 +249,74 @@ int main(int argc, char *argv[]) {
 			search_stream(stdin, NULL, search_pattern);
 			continue;
 		}
-		errno=0;
+		errno = 0;
 		/*get the file info */
 		if (stat(temp_str, &info) == -1) {
 			perror(temp_str);
 			continue;
 		}
 		/* if it directory */
-		if (S_ISDIR(info.st_mode))
-		{
+		if (S_ISDIR(info.st_mode)) {
 			/*
 			 * if -d is set to 0, do not process directory
 			 */
-			if (max_dir_depth==0)
-				fprintf(stderr,"%s is detected to exceed the search limit %d\n",
-						temp_str, max_dir_depth);
-			else
-			{
+			if (max_dir_depth == 0) {
+				/*if -q is set */
+				if (!(options_flags & NO_ERR_MSG))
+					fprintf(stderr,
+							"%s is detected to exceed the search limit %d\n",
+							temp_str, max_dir_depth);
+				continue;
+			} else {
 				/*allocate space to a history stack*/
-				if ((temp_stk=malloc(sizeof(stack)))==NULL)
-				{
+				if ((temp_stk = malloc(sizeof(stack))) == NULL) {
 					perror("malloc():");
 					continue;
-				}
-				else
-				{
+				} else {
 					/* initialize the stack and push it on stacks*/
 					stack_init(temp_stk);
 					push_stacks(temp_stk);
 					/* make a node */
-					if((temp_node=make_node(temp_str,1,temp_stk))==NULL)
-					{
-						fprintf(stderr,"Error in make_node\n");
+					if ((temp_node = make_node(temp_str, 1, temp_stk)) == NULL) {
 						continue;
 					}
 					/*push the root node to the stack and kick it off*/
-					stack_push(temp_stk,temp_node,NULL);
+					stack_push(temp_stk, temp_node, NULL);
 					walk_to_next(temp_node);
 				}
 			}
 			continue;
 		}
-		search_file(temp_str,search_pattern,0);
+		search_file(temp_str, search_pattern, 0);
 	}
 	atexit(exit_func2);
 	pthread_exit(NULL);
+
+	/* it has no real meaning, just to depreciate the compiler warning*/
 	return 0;
 } /* main */
 
 // function to clean up
-void exit_func1()
-{
+void exit_func1() {
 	if (search_pattern != NULL)
 		free(search_pattern);
 }
 
 // function to clear up the stacks
-void exit_func2()
-{
+void exit_func2() {
 	clear_stacks();
 }
 /* push a stack* to the stack of stacks*/
-void push_stacks(stack *val)
-{
+void push_stacks(stack *val) {
 	stacks[++stacks_top] = val;
 }
 /* clean the stacks*/
-void clear_stacks()
-{
+void clear_stacks() {
 	int d;
 	/* if no subdirs, no need to clean */
-	if(stacks_top==-1)
+	if (stacks_top == -1)
 		return;
-	for(d=stacks_top;d>=0;d--)
-	{
+	for (d = stacks_top; d >= 0; d--) {
 		stack_destroy(stacks[d]);
 		free(stacks[d]);
 	}
