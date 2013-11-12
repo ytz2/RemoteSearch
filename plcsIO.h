@@ -17,6 +17,7 @@
 #ifndef PLCSIO_H_
 #define PLCSIO_H_
 #include "ospenv.h" /* this header defines POSIX, ISOC, XOPEN and EXTENSIONS */
+#include "client.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -25,10 +26,11 @@
 #include <limits.h>
 #include "command_util.h"
 #include "str_search.h"
-#include "global.h"
 #include "rpath.h"
 #include <pthread.h>
-
+#include "dirHandle.h"
+#include "send_recv.h"
+#include "thread_share.h"
 
 /*
  * function to create the key
@@ -40,7 +42,7 @@ void thread_init();
  * defined in homework. -b -e -i and -v are handled
  */
 
-int search_str(char* buffer, char* search_str);
+int search_str(char* buffer, search *mysearch);
 
 /*
  * print_line
@@ -48,9 +50,7 @@ int search_str(char* buffer, char* search_str);
  * will write realpath: lineno: str or if realpath is NULL
  * write: lineno: str
  */
-void print_line(int lineno, char* realpath, char* str);
-
-
+void print_line(int lineno, char* realpath, char* str,int colum_number);
 
 /*
  * search_stream
@@ -59,7 +59,7 @@ void print_line(int lineno, char* realpath, char* str);
  * or default value into any_line_buffer
  * search and print it
  */
-void search_stream(FILE *input, char* filename, char* search_str);
+void search_stream(FILE *input, char* filename, search *mysearch);
 
 
 /*
@@ -68,5 +68,11 @@ void search_stream(FILE *input, char* filename, char* search_str);
  * but add another flag to indicate it is in sub directory
  * tow work well with -q
  */
-void search_file(char* filename, char *search_str,int flag);
+void search_file(char* filename, search *mysearch,int flag);
+
+/*
+ * wrapper function build the shift talbe
+ */
+void build_shifttable(search *mysearch);
+
 #endif /* PLCSIO_H_ */

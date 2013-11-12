@@ -21,9 +21,9 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include "rpath.h"
-#include "global.h"
 #include "command_util.h"
 #include "plcsIO.h"
+#include "thread_share.h"
 
 /* define the element structure for history stack */
 typedef struct STACK stack; //pre declaration
@@ -53,6 +53,7 @@ struct STACK {
 	 * a thread finished, the resource of that thread releases in time.
 	 */
 	pthread_attr_t attr;
+	search *mysearch;
 };
 
 /*
@@ -95,7 +96,7 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath);
 /*
  * get the full path from the realpath and d_name
  */
-char* get_fullpath(char* rpath, char *fname);
+char* get_fullpath(char* rpath, char *fname,int flag);
 
 /*
  * Walk through a dir from the current node
@@ -107,7 +108,7 @@ int walk_recur(Node* current);
  * if it is, return bool 1
  * else false 0
  */
-int is_sym_dir(char* full_name);
+int is_sym_dir(char* full_name,int flag);
 
 /*
  * wrapper function for directory search

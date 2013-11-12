@@ -15,18 +15,21 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <limits.h>
+#include <pthread.h>
 /* predefine parameters to work with getopt interface*/
 
 #define OPTIONS ":hbeipvafql:m:n:d:t:"
 #define WHITE_SPACE " \n\r\t\v\f"
-#define AT_BEGIN            0x0001  /* -b switch */
-#define AT_END              0x0002  /* -e switch */
-#define CASE_SENSITIVE	    0x0004  /* -i switch */
-#define SHOW_PATH           0x0008  /* -p switch */
-#define INVERSE_PRINT       0x0010  /* -v default is */
-#define DOT_ACCESS           0x0020  /* -a switch */
-#define NOT_FOLLOW_LINK     0x0040  /* -f switch */
-#define NO_ERR_MSG          0x0080  /* -q switch */
+#define WHITE_SPACE " \n\r\t\v\f"
+#define DOT_ACCESS          0x01  /* -a switch */
+#define AT_BEGIN            0x02  /* -b switch */
+#define AT_END              0x04  /* -e switch */
+#define NOT_FOLLOW_LINK     0x08  /* -f switch */
+#define CASE_INSENSITIVE    0x10  /* -i switch */
+#define SHOW_PATH           0x20  /* -p switch */
+#define NO_ERR_MSG          0x40  /* -q switch */
+#define INVERSE_PRINT       0x80  /* -v default is */
 
 /* magic number definition */
 #define DEFAULT_LINE_BUFFER 255
@@ -34,7 +37,21 @@
 #define MAX_COLS            16
 #define MAX_FILES           1024
 #define STREAM_REDIRECT     "-"
-#define MAX_STACKS 1000 /* The size of stack of stacks */
+
+#define PORT_MAX 5
+#ifdef HOST_NAME_MAX
+#define HOSTMAX HOST_NAME_MAX
+#else
+#define HOSTMAX 255
+#endif
+
+#define REMOTE_NAME_MAX 1024
+#define NFLAGS 6
+#define MAX_SEARCH_STR 1024
+
+#define MAX_TCP_STD 4096*2
+#define MAX_TCP_ERR MAX_TCP_STD
+
 /* Function Utilities*/
 
 /* Scans the string pointed to by optarg and tries to convert it to a number.
@@ -52,5 +69,52 @@ trim_line(char *buffer);
 
 /* print the flag value, this is used to debug*/
 void print_flag(unsigned int flags, unsigned int this_one, char *name);
+
+
+/*wrap the command parameters to a structure to faciliate
+ * the assignment 3
+ */
+typedef struct Search_info{
+	unsigned int options_flags; /* work with switch options_flags*/
+	int *shift_table; /* shift table*/
+	int line_buffer_size; /* work with -l number*/
+	int max_line_number; /* work with -m number*/
+	int column_number; /* work with -n number*/
+	char *search_pattern; /* the search pattern*/
+	int thread_limits; /* work with -t number*/
+	int max_dir_depth; /* work with -d number */
+	int client_fd; /* to work with the server */
+} search;
+
+/*initialize the search request*/
+void init_search(search **mysearch);
+/*destroy the search*/
+void destroy_search(search *mysearch);
+/* wrapper of getopt function */
+void scan_opt_search(int argc,char *argv[],search *mysearch);
+
+
+typedef struct Remote{
+	char node[HOSTMAX+1];
+	char port[PORT_MAX+1];
+	char name[REMOTE_NAME_MAX+1];
+} remote; /* node:port/name */
+
+/* check if the list of file contain the : to indicate a remote search */
+remote* scan_remote_search(char *input);
+
+typedef struct Client_parameters{
+	remote* rmt;
+	search* mysearch;
+} Client_para;
+
+typedef struct Message_one{
+	unsigned int options_flags; /* work with switch options_flags*/
+	int line_buffer_size; /* work with -l number*/
+	int max_line_number; /* work with -m number*/
+	int column_number; /* work with -n number*/
+	int thread_limits; /* work with -t number*/
+	int max_dir_depth; /* work with -d number */
+} msg_one;
 
 #endif /* COMMAND_UTIL_H_ */

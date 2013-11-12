@@ -18,15 +18,19 @@
  */
 
 #include "plcsIO.h"
-
+#include "thread_share.h"
 /*
  * search_str is a wrapper function wraps the options searches
  * defined in homework. -b -e -i and -v are handled
  */
 
-int search_str(char* buffer, char* search_str) {
 
+int search_str(char* buffer, search *mysearch) {
 	int result, insensitive;
+	unsigned int options_flags;
+	char *search_str;
+	options_flags=mysearch->options_flags;
+	search_str=mysearch->search_pattern;
 	result = 0;
 	insensitive = 0;
 
@@ -36,7 +40,7 @@ int search_str(char* buffer, char* search_str) {
 		exit(1);
 	}
 	/* check if -i is set, if on set insensitive as 1 else 0 */
-	insensitive = !(options_flags & CASE_SENSITIVE);
+	insensitive = (options_flags & CASE_INSENSITIVE);
 
 	if ((options_flags & AT_BEGIN) && !(options_flags & AT_END))
 		result = search_begin(buffer, search_str, insensitive);
@@ -48,18 +52,48 @@ int search_str(char* buffer, char* search_str) {
 		result = exact_match(buffer, search_str, insensitive);
 	/* else return the normal search */
 	else
-		result = boyer_moore(buffer, search_str, shift_table, insensitive);
+		result = boyer_moore(buffer, search_str, mysearch->shift_table, insensitive);
 
 	return (options_flags & INVERSE_PRINT ? (!result) : result);
 }/*search_str*/
 
+
+void send_print_line(int lineno, char* realpath, char* str,int column_number,search *mysearch) {
+
+	const char *temp1, *temp2;
+	char *out_buffer;
+	out_buffer = pthread_getspecific(out_buffer_key);
+		/* allocate memory to buffer*/
+	if (out_buffer == NULL) {
+		out_buffer = (char*) malloc(MAX_TCP_STD);
+		pthread_setspecific(out_buffer_key, out_buffer);
+	}
+	if (realpath == NULL) {
+		temp1 = "";
+		temp2 = "";
+	} else {
+		temp1 = realpath;
+		temp2 = ": ";
+	}
+	if (column_number > 0)
+		sprintf(out_buffer,"%s%s%*d: %s", temp1, temp2, column_number, lineno, str);
+	else
+		sprintf(out_buffer,"%s%s%s", temp1, temp2, str);
+	/* send the fourth message */
+	if (our_send_message(mysearch->client_fd, OUTPUT_STD,(strlen(out_buffer)+1)*sizeof(char),out_buffer) != 0)
+	{
+		fprintf(stderr,"Fail to send %s\n",out_buffer);
+		return;
+	}
+
+}/*print_line*/
 /*
  * print_line
  * print the str to standard output as the specified cols
  * will write realpath: lineno: str or if realpath is NULL
  * write: lineno: str
  */
-void print_line(int lineno, char* realpath, char* str) {
+void print_line(int lineno, char* realpath, char* str,int column_number) {
 	const char *temp1, *temp2;
 	if (realpath == NULL) {
 		temp1 = "";
@@ -76,29 +110,13 @@ void print_line(int lineno, char* realpath, char* str) {
 }/*print_line*/
 
 /*
- * function to create the key
- * to depreciate the SunOS bracket warning, use some
- * testing macro
- */
-static pthread_key_t line_buffer_key; // key to bind a line buffer
-#ifdef __sun__
-static pthread_once_t init_done= {PTHREAD_ONCE_INIT}; // once key
-#else
-static pthread_once_t init_done = PTHREAD_ONCE_INIT; // once key
-#endif
-
-void thread_init() {
-	pthread_key_create(&line_buffer_key, free);
-}
-
-/*
  * search_stream
  * accept stream ptr either file or stdin
  * read each line specified by -p switch
  * or default value into any_line_buffer
  * search and print it
  */
-void search_stream(FILE *fptr, char* filename, char* objstr) {
+void search_stream(FILE *fptr, char* filename, search *mysearch) {
 	int lineno;
 	int output_lineno;
 	char* rptr, *memptr, *any_line_buffer;
@@ -106,15 +124,11 @@ void search_stream(FILE *fptr, char* filename, char* objstr) {
 	rptr = NULL;
 	memptr = NULL;
 	output_lineno = 1;
-
-	/*
-	 * create the key
-	 */
 	pthread_once(&init_done, thread_init);
 	any_line_buffer = pthread_getspecific(line_buffer_key);
 	/* allocate memory to buffer*/
 	if (any_line_buffer == NULL) {
-		any_line_buffer = (char*) malloc(line_buffer_size + 1);
+		any_line_buffer = (char*) malloc(mysearch->line_buffer_size + 1);
 		pthread_setspecific(line_buffer_key, any_line_buffer);
 	}
 
@@ -122,15 +136,15 @@ void search_stream(FILE *fptr, char* filename, char* objstr) {
 	 * check if it is stdin, if not and show_path is set
 	 * get the realpath for printing purpose
 	 */
-	if ((fptr != stdin) && (options_flags & SHOW_PATH))
+	if ((fptr != stdin) && (mysearch->options_flags & SHOW_PATH))
 		rptr = get_realpath(filename, &memptr);
 
 	/*process each line in the input*/errno = 0;
 	for (lineno = 1;
 			!feof(fptr)
-					&& fgets(any_line_buffer, line_buffer_size + 1, fptr)
+					&& fgets(any_line_buffer, mysearch->line_buffer_size + 1, fptr)
 							!= NULL; lineno++) {
-		if (max_line_number >= 0 && output_lineno > max_line_number)
+		if (mysearch->max_line_number >= 0 && output_lineno > mysearch->max_line_number)
 			break;
 		if (errno != 0 || ferror(fptr)) {
 			/*error check*/
@@ -143,8 +157,11 @@ void search_stream(FILE *fptr, char* filename, char* objstr) {
 		}
 		trim_line(any_line_buffer);
 		/*if get the match, print the line*/
-		if (search_str(any_line_buffer, objstr)) {
-			print_line(lineno, rptr, any_line_buffer);
+		if (search_str(any_line_buffer, mysearch)) {
+			if (mysearch->client_fd>0)
+				send_print_line(lineno, rptr, any_line_buffer,mysearch->column_number,mysearch);
+			else
+				print_line(lineno, rptr, any_line_buffer,mysearch->column_number);
 			output_lineno++;
 		}
 	}
@@ -163,13 +180,33 @@ void search_stream(FILE *fptr, char* filename, char* objstr) {
  * since when dealing with subdirectories, the stat will follow all
  * the way down and if any problem occurs, stat can issue error
  */
-void search_file(char* filename, char *search_str, int flag) {
+void search_file(char* filename, search *mysearch, int flag) {
 	FILE *fptr;
 	if ((fptr = fopen(filename, "r")) == NULL) {
-		if (flag == 0 || (flag == 1 && !(options_flags & NO_ERR_MSG)))
+		if (flag == 0 || (flag == 1 && !(mysearch->options_flags & NO_ERR_MSG)))
 			perror(filename);
 	} else {
-		search_stream(fptr, filename, search_str);
+		search_stream(fptr, filename, mysearch);
 		fclose(fptr);
 	}
+
+}
+
+/*
+ * wrapper function build the shift talbe
+ */
+void build_shifttable(search *mysearch)
+{
+	/*if both -b and -e are not switched on, build the shit table*/
+	/*for BM algorithm to implement*/
+	if ((mysearch->shift_table=(int*)malloc(MAX_ASCII*sizeof(int)))==NULL)
+	{
+		perror("malloc: ");
+		exit(1);
+	}
+	if (!(mysearch->options_flags & AT_BEGIN) && !(mysearch->options_flags & AT_END)
+			&& strlen(mysearch->search_pattern))
+		build_shift_table(mysearch->shift_table, mysearch->search_pattern,
+				(mysearch->options_flags & CASE_INSENSITIVE));
+
 }

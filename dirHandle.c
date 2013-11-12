@@ -9,19 +9,6 @@
 
 #include "dirHandle.h"
 
-/*
- * debuging purpose
- * usage: dbg(__func__,msg,__LINE__)
- *        or dbg(__func__,node->path,node->counter)
- * leave here for assignment 3, no use in current project
- * and leave it here.
- */
-
-/*static void dbg(const char* func, const char* path, int count) {
- fprintf(stderr, "%s: %s is %d \n", func, path, count);
- fflush(stderr);
- }*/
-
 /*global lock for counter*/
 static pthread_mutex_t counter_lock = PTHREAD_MUTEX_INITIALIZER;
 /* global parameter to count how many alive threads in use */
@@ -49,14 +36,14 @@ Node* make_node(char *dname, int depth, stack *stk) {
 
 	/* open the direcotry with full path */
 	if ((dir = opendir(rptr)) == NULL) {
-		if (!(options_flags & NO_ERR_MSG))
+		if (!(stk->mysearch->options_flags & NO_ERR_MSG))
 			perror(rptr);
 		return NULL;
 	}
 
 	/* give space to a node */
 	if ((temp = (Node*) malloc(sizeof(Node))) == NULL) {
-		if (!(options_flags & NO_ERR_MSG))
+		if (!(stk->mysearch->options_flags & NO_ERR_MSG))
 			perror("malloc()");
 		return NULL;
 	}
@@ -124,7 +111,7 @@ int stack_push(stack *st, Node *current, Node *next) {
 		return -1;
 
 	if ((err = pthread_rwlock_wrlock(&st->s_lock)) != 0) {
-		if (!(options_flags & NO_ERR_MSG))
+		if (!(st->mysearch->options_flags & NO_ERR_MSG))
 			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
 		return err;
 	}
@@ -143,7 +130,7 @@ int stack_push(stack *st, Node *current, Node *next) {
 	}
 
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
-		if (!(options_flags & NO_ERR_MSG))
+		if (!(st->mysearch->options_flags & NO_ERR_MSG))
 			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 		return err;
 	}
@@ -158,7 +145,7 @@ int stack_job_done(stack *st, Node *current) {
 	Node *temp, *tofree;
 	temp = current;
 	if ((err = pthread_rwlock_wrlock(&st->s_lock)) != 0) {
-		if (!(options_flags & NO_ERR_MSG))
+		if (!(st->mysearch->options_flags & NO_ERR_MSG))
 			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
 		return err;
 	}
@@ -187,9 +174,15 @@ int stack_job_done(stack *st, Node *current) {
 	}
 
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
-		if (!(options_flags & NO_ERR_MSG))
+		if (!(st->mysearch->options_flags & NO_ERR_MSG))
 			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 		return err;
+	}
+	if (temp==NULL)
+		/*if it is the root */
+	{
+		stack_destroy(st);
+		free(st);
 	}
 	return 0;
 }
@@ -201,7 +194,7 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 	int err;
 	Node *temp, *iter;
 	if ((err = pthread_rwlock_rdlock(&st->s_lock)) != 0) {
-		if (!(options_flags & NO_ERR_MSG))
+		if (!(st->mysearch->options_flags & NO_ERR_MSG))
 			fprintf(stderr, "rwlock_rdlock: %s\n", strerror(err));
 		return NULL;
 	}
@@ -212,7 +205,7 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 			break;
 	}
 
-	if (temp != NULL && !(options_flags & NO_ERR_MSG)) {
+	if (temp != NULL && !(st->mysearch->options_flags & NO_ERR_MSG)) {
 		fprintf(stderr, "%d depth: %s detect a loop\n", current->depth + 1,
 				fullpath);
 		/*
@@ -226,7 +219,7 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 		}
 	}
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
-		if (!(options_flags & NO_ERR_MSG))
+		if (!(st->mysearch->options_flags & NO_ERR_MSG))
 			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 		return NULL;
 	}
@@ -236,7 +229,7 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 /*
  * get the full path from the realpath and d_name
  */
-char* get_fullpath(char* rpath, char *fname) {
+char* get_fullpath(char* rpath, char *fname,int flag) {
 	/*
 	 * basic string operations
 	 * give a buffer, copy the realpath
@@ -251,7 +244,7 @@ char* get_fullpath(char* rpath, char *fname) {
 		name_max = 4096; /* arbitrarily large */
 	/* rapth+/+name_max+'/0'=strlen(rapth)+name_max+2, for safety+5*/
 	if ((fullpath = malloc(len + name_max + 5)) == NULL) {
-		if (!(options_flags & NO_ERR_MSG))
+		if (flag !=0)
 			perror("malloc()");
 		return NULL;
 	}
@@ -267,7 +260,7 @@ char* get_fullpath(char* rpath, char *fname) {
  * if it is, return bool 1
  * else false 0,failure -1
  */
-int is_sym_dir(char* full_name) {
+int is_sym_dir(char* full_name,int flag) {
 	struct stat st;
 	int val;
 	errno = 0;
@@ -276,7 +269,7 @@ int is_sym_dir(char* full_name) {
 	 */
 	if (stat(full_name, &st) == -1) {
 		/* if the link does not exist, issue error*/
-		if (!(options_flags & NO_ERR_MSG)) {
+		if (flag!=0) {
 			perror(full_name);
 		}
 		val = -1;
@@ -304,12 +297,15 @@ int walk_recur(Node* current) {
 	stack *stk; // history stack
 	long name_max;
 	struct stat st;
+	unsigned int options_flags;
+	search *mysearch;
 	/* get the current directory info*/
 	depth = current->depth;
 	stk = current->stk;
 	dir = current->dir;
 	current_path = current->path;
-
+	options_flags=stk->mysearch->options_flags;
+	mysearch=stk->mysearch;
 	name_max = pathconf(current_path, _PC_NAME_MAX);
 	if (name_max <= 0)
 		name_max = 4096; /* arbitrarily large */
@@ -345,7 +341,7 @@ int walk_recur(Node* current) {
 		 * hmmm don't forget to free full_path when any condition
 		 * cause to neglect one step
 		 */
-		full_path = get_fullpath(current_path, result->d_name);
+		full_path = get_fullpath(current_path, result->d_name,!(options_flags & NO_ERR_MSG));
 
 		/* get the stat info of subdir/file*/
 		if (lstat(full_path, &st) == -1) {
@@ -366,7 +362,7 @@ int walk_recur(Node* current) {
 			/* use stat to follow the symlink to test whether the symlink to
 			 * dir or file exist
 			 */
-			sym_link_flag = is_sym_dir(full_path);
+			sym_link_flag = is_sym_dir(full_path,!(options_flags & NO_ERR_MSG));
 			/* if it does not exist, just go to process next one */
 			if (sym_link_flag == -1) {
 				free(full_path);
@@ -377,11 +373,11 @@ int walk_recur(Node* current) {
 		/* if it is the directory or soft link to a directory */
 		if (S_ISDIR(st.st_mode) || sym_link_flag == 1) {
 			/* if the max_dir_depth is defined and it reached this limit*/
-			if (max_dir_depth >= 0 && depth == max_dir_depth) {
+			if (stk->mysearch->max_dir_depth >= 0 && depth == stk->mysearch->max_dir_depth) {
 				if (!(options_flags & NO_ERR_MSG)) {
 					fprintf(stderr,
 							"%s is detected to exceed the search limit %d\n",
-							full_path, max_dir_depth);
+							full_path, stk->mysearch->max_dir_depth);
 				}
 				free(full_path);
 				continue;
@@ -410,7 +406,7 @@ int walk_recur(Node* current) {
 			fflush(stderr);
 			continue;
 		}
-		search_file(full_path, search_pattern, 1);
+		search_file(full_path, mysearch, 1);
 		free(full_path);
 		fflush(stderr);
 	}
@@ -424,10 +420,18 @@ int walk_recur(Node* current) {
  * wrapper function for directory search
  */
 void* search_dir(void *para) {
-	long err = 0;
+	long err;
+	int thread_limits;
+	Node *next;
+	/*
+	 * create the key
+	 */
+	pthread_once(&init_done, thread_init);
+	err= 0;
+	next=(Node*)para;
+	thread_limits=next->stk->mysearch->thread_limits;
 
-	err = walk_recur((Node*) para);
-
+	err = walk_recur(next);
 	fflush(stderr);
 
 	/*decrement the counter when firstly enter*/
@@ -448,9 +452,11 @@ void* search_dir(void *para) {
  */
 int walk_to_next(Node* next) {
 	pthread_t id; // thread id
-	int err;
+	int err,thread_limits;
+	unsigned int options_flags;
 	err = 1;
-
+	thread_limits=next->stk->mysearch->thread_limits;
+	options_flags=next->stk->mysearch->options_flags;
 	/*if the thread number limit is 0, use main thread*/
 	if (thread_limits == 0) {
 		return walk_recur(next);

@@ -18,7 +18,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <strings.h>
-#define MIN(a,b)  ((((a)-(b))&0x80000000) >> 31)? (a) : (b)
+#include "command_util.h"
 #define MAX_ASCII 256
 /*
  * accept an ascii table contains MAX_ASCII elements

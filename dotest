@@ -1528,6 +1528,6 @@ echo "---------------------------------------------------"
 make clean
 rm *.err
 rm *.out
-rm -rf dir
+#rm -rf dir
 rm -rf dir2
 rm .test000.in
