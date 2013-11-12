@@ -76,7 +76,6 @@ void destroy_search(search *mysearch)
 		free(mysearch->shift_table);
 	if ((mysearch->client_fd)>0)
 	{
-		fprintf(stdout,"Closing Client_fd %d\n",mysearch->client_fd);
 		close(mysearch->client_fd);
 	}
 	free(mysearch);
