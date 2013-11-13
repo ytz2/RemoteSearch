@@ -67,6 +67,7 @@ void init_search(search **my_search)
 	(*my_search)->shift_table=NULL;
 	(*my_search)->client_fd=-1;
 	(*my_search)->thread_done=-1;
+	(*my_search)->alive_threads=0;
 	pthread_mutex_init(&((*my_search)->lock),NULL);
 	pthread_cond_init(&((*my_search)->ready),NULL);
 }

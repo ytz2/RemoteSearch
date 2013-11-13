@@ -137,7 +137,7 @@ server_agent(void *params)
 	search_given(remote_obj, mysearch);
 	/* destroy the resoureces */
 	destroy_search(mysearch);
-	fprintf(stderr,"\nserver plcsd disconnected from client at "
+	fprintf(stderr,"server plcsd disconnected from client at "
 		"IP address %s port %d\n", text_buf, ntohs(iptr->sin_port));
 	free(params);
 	return NULL;

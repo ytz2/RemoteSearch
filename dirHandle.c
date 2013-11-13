@@ -9,11 +9,6 @@
 
 #include "dirHandle.h"
 
-/*global lock for counter*/
-static pthread_mutex_t counter_lock = PTHREAD_MUTEX_INITIALIZER;
-/* global parameter to count how many alive threads in use */
-static long alive_threads = 0;
-
 /*
  * make a history stack node
  */
@@ -22,7 +17,7 @@ Node* make_node(char *dname, int depth, stack *stk) {
 	DIR *dir;
 	char* rptr, *memptr;
 	search *mysearch;
-	mysearch=stk->mysearch;
+	mysearch = stk->mysearch;
 	errno = 0;
 	rptr = NULL;
 	memptr = NULL;
@@ -32,18 +27,18 @@ Node* make_node(char *dname, int depth, stack *stk) {
 		/* error report has been done within get_realpath */
 		if (memptr)
 			free(memptr);
-		if ((mysearch->options_flags & NO_ERR_MSG)!=0 && mysearch->client_fd>0)
-			send_err_line(mysearch,"%s: %s",dname,strerror(errno));
+		if ((mysearch->options_flags & NO_ERR_MSG) != 0
+				&& mysearch->client_fd > 0)
+			send_err_line(mysearch, "%s: %s", dname, strerror(errno));
 		return NULL;
 	}
 
 	/* open the direcotry with full path */
 	if ((dir = opendir(rptr)) == NULL) {
-		if (!(stk->mysearch->options_flags & NO_ERR_MSG))
-		{
+		if (!(stk->mysearch->options_flags & NO_ERR_MSG)) {
 			perror(rptr);
-			if (mysearch->client_fd>0)
-				send_err_line(mysearch,"%s: %s",rptr,strerror(errno));
+			if (mysearch->client_fd > 0)
+				send_err_line(mysearch, "%s: %s", rptr, strerror(errno));
 		}
 
 		return NULL;
@@ -138,8 +133,7 @@ int stack_push(stack *st, Node *current, Node *next) {
 	}
 
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
-		if (!(st->mysearch->options_flags & NO_ERR_MSG))
-		{
+		if (!(st->mysearch->options_flags & NO_ERR_MSG)) {
 			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 		}
 		return err;
@@ -188,14 +182,13 @@ int stack_job_done(stack *st, Node *current) {
 			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 		return err;
 	}
-	if (temp==NULL)
-		/*if it is the root */
+	if (temp == NULL)
+	/*if it is the root */
 	{
 		/* on server side turn the waiting condition off*/
-		if (st->mysearch->client_fd>0)
-		{
+		if (st->mysearch->client_fd > 0) {
 			pthread_mutex_lock(&(st->mysearch->lock));
-			st->mysearch->thread_done=1;
+			st->mysearch->thread_done = 1;
 			pthread_mutex_unlock(&(st->mysearch->lock));
 			pthread_cond_signal(&(st->mysearch->ready));
 		}
@@ -212,7 +205,7 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 	int err;
 	Node *temp, *iter;
 	search *mysearch;
-	mysearch=st->mysearch;
+	mysearch = st->mysearch;
 	if ((err = pthread_rwlock_rdlock(&st->s_lock)) != 0) {
 		if (!(mysearch->options_flags & NO_ERR_MSG))
 			fprintf(stderr, "rwlock_rdlock: %s\n", strerror(err));
@@ -229,9 +222,9 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 		{
 			fprintf(stderr, "%d depth: %s detect a loop\n", current->depth + 1,
 					fullpath);
-			if (mysearch->client_fd>0)
-				send_err_line(mysearch,"%d depth: %s detect a loop",current->depth + 1,
-						fullpath);
+			if (mysearch->client_fd > 0)
+				send_err_line(mysearch, "%d depth: %s detect a loop",
+						current->depth + 1, fullpath);
 		}
 		/*
 		 * go back to print all the loop elements in the loop branch
@@ -240,8 +233,8 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 		for (iter = current; iter != temp->prev; iter = iter->prev) {
 			fprintf(stderr, "%*c%d depth: %s\n", 3 * iter->depth, ' ',
 					iter->depth, iter->path);
-			if (mysearch->client_fd>0)
-				send_err_line(mysearch,"%*c%d depth: %s", 3 * iter->depth, ' ',
+			if (mysearch->client_fd > 0)
+				send_err_line(mysearch, "%*c%d depth: %s", 3 * iter->depth, ' ',
 						iter->depth, iter->path);
 			fflush(stderr);
 		}
@@ -257,7 +250,7 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 /*
  * get the full path from the realpath and d_name
  */
-char* get_fullpath(char* rpath, char *fname,int flag) {
+char* get_fullpath(char* rpath, char *fname, int flag) {
 	/*
 	 * basic string operations
 	 * give a buffer, copy the realpath
@@ -272,7 +265,7 @@ char* get_fullpath(char* rpath, char *fname,int flag) {
 		name_max = 4096; /* arbitrarily large */
 	/* rapth+/+name_max+'/0'=strlen(rapth)+name_max+2, for safety+5*/
 	if ((fullpath = malloc(len + name_max + 5)) == NULL) {
-		if (flag !=0)
+		if (flag != 0)
 			perror("malloc()");
 		return NULL;
 	}
@@ -288,7 +281,7 @@ char* get_fullpath(char* rpath, char *fname,int flag) {
  * if it is, return bool 1
  * else false 0,failure -1
  */
-int is_sym_dir(char* full_name,search *mysearch,int flag) {
+int is_sym_dir(char* full_name, search *mysearch, int flag) {
 	struct stat st;
 	int val;
 	errno = 0;
@@ -297,10 +290,10 @@ int is_sym_dir(char* full_name,search *mysearch,int flag) {
 	 */
 	if (stat(full_name, &st) == -1) {
 		/* if the link does not exist, issue error*/
-		if (flag!=0) {
+		if (flag != 0) {
 			perror(full_name);
-			if (mysearch->client_fd>0)
-				send_err_line(mysearch,"%s:%s",full_name,strerror(errno));
+			if (mysearch->client_fd > 0)
+				send_err_line(mysearch, "%s:%s", full_name, strerror(errno));
 		}
 		val = -1;
 	} else if (S_ISDIR(st.st_mode))
@@ -334,8 +327,8 @@ int walk_recur(Node* current) {
 	stk = current->stk;
 	dir = current->dir;
 	current_path = current->path;
-	options_flags=stk->mysearch->options_flags;
-	mysearch=stk->mysearch;
+	options_flags = stk->mysearch->options_flags;
+	mysearch = stk->mysearch;
 	name_max = pathconf(current_path, _PC_NAME_MAX);
 	if (name_max <= 0)
 		name_max = 4096; /* arbitrarily large */
@@ -349,12 +342,12 @@ int walk_recur(Node* current) {
 
 	while (1) {
 		if ((err = readdir_r(dir, entry, &result)) != 0) {
-			if (!(options_flags & NO_ERR_MSG))
-				{
-					perror("readdir_r");
-					if (mysearch->client_fd>0)
-						send_err_line(mysearch,"%s: %s","readdir_r",strerror(errno));
-				}
+			if (!(options_flags & NO_ERR_MSG)) {
+				perror("readdir_r");
+				if (mysearch->client_fd > 0)
+					send_err_line(mysearch, "%s: %s", "readdir_r",
+							strerror(errno));
+			}
 			break;
 		}
 		if (result == NULL) /* just hit EOF */
@@ -375,15 +368,16 @@ int walk_recur(Node* current) {
 		 * hmmm don't forget to free full_path when any condition
 		 * cause to neglect one step
 		 */
-		full_path = get_fullpath(current_path, result->d_name,!(options_flags & NO_ERR_MSG));
+		full_path = get_fullpath(current_path, result->d_name,
+				!(options_flags & NO_ERR_MSG));
 
 		/* get the stat info of subdir/file*/
 		if (lstat(full_path, &st) == -1) {
-			if (!(options_flags & NO_ERR_MSG))
-			{
+			if (!(options_flags & NO_ERR_MSG)) {
 				perror(full_path);
-				if (mysearch->client_fd>0)
-					send_err_line(mysearch,"%s: %s",full_path,strerror(errno));
+				if (mysearch->client_fd > 0)
+					send_err_line(mysearch, "%s: %s", full_path,
+							strerror(errno));
 			}
 
 			free(full_path);
@@ -393,11 +387,10 @@ int walk_recur(Node* current) {
 		if (S_ISLNK(st.st_mode)) {
 			/* if -f is set, do not follow link */
 			if (options_flags & NOT_FOLLOW_LINK) {
-				if (!(options_flags & NO_ERR_MSG))
-				{
+				if (!(options_flags & NO_ERR_MSG)) {
 					fprintf(stderr, "Symlink: %s\n", full_path);
-					if (mysearch->client_fd>0)
-						send_err_line(mysearch,"Symlink: %s", full_path);
+					if (mysearch->client_fd > 0)
+						send_err_line(mysearch, "Symlink: %s", full_path);
 				}
 				free(full_path);
 				continue;
@@ -405,7 +398,8 @@ int walk_recur(Node* current) {
 			/* use stat to follow the symlink to test whether the symlink to
 			 * dir or file exist
 			 */
-			sym_link_flag = is_sym_dir(full_path,mysearch,!(options_flags & NO_ERR_MSG));
+			sym_link_flag = is_sym_dir(full_path, mysearch,
+					!(options_flags & NO_ERR_MSG));
 			/* if it does not exist, just go to process next one */
 			if (sym_link_flag == -1) {
 				free(full_path);
@@ -416,13 +410,15 @@ int walk_recur(Node* current) {
 		/* if it is the directory or soft link to a directory */
 		if (S_ISDIR(st.st_mode) || sym_link_flag == 1) {
 			/* if the max_dir_depth is defined and it reached this limit*/
-			if (stk->mysearch->max_dir_depth >= 0 && depth == stk->mysearch->max_dir_depth) {
+			if (stk->mysearch->max_dir_depth >= 0
+					&& depth == stk->mysearch->max_dir_depth) {
 				if (!(options_flags & NO_ERR_MSG)) {
 					fprintf(stderr,
 							"%s is detected to exceed the search limit %d\n",
 							full_path, stk->mysearch->max_dir_depth);
-					if (mysearch->client_fd>0)
-						send_err_line(mysearch,"%s is detected to exceed the search limit %d",
+					if (mysearch->client_fd > 0)
+						send_err_line(mysearch,
+								"%s is detected to exceed the search limit %d",
 								full_path, stk->mysearch->max_dir_depth);
 
 				}
@@ -470,22 +466,25 @@ void* search_dir(void *para) {
 	long err;
 	int thread_limits;
 	Node *next;
+	search *mysearch;
 	/*
 	 * create the key
 	 */
 	pthread_once(&init_done, thread_init);
-	err= 0;
-	next=(Node*)para;
-	thread_limits=next->stk->mysearch->thread_limits;
+	err = 0;
+	next = (Node*) para;
+	mysearch = next->stk->mysearch;
+	thread_limits = mysearch->thread_limits;
 
 	err = walk_recur(next);
 	fflush(stderr);
 
 	/*decrement the counter when firstly enter*/
 	if (thread_limits > 0) {
-		pthread_mutex_lock(&counter_lock);
-		alive_threads--;
-		pthread_mutex_unlock(&counter_lock);
+
+		pthread_mutex_lock(&mysearch->lock);
+		mysearch->alive_threads--;
+		pthread_mutex_lock(&mysearch->lock);
 	}
 
 	pthread_exit((void*) err);
@@ -499,11 +498,13 @@ void* search_dir(void *para) {
  */
 int walk_to_next(Node* next) {
 	pthread_t id; // thread id
-	int err,thread_limits;
+	int err, thread_limits;
 	unsigned int options_flags;
+	search *mysearch;
 	err = 1;
-	thread_limits=next->stk->mysearch->thread_limits;
-	options_flags=next->stk->mysearch->options_flags;
+	mysearch = next->stk->mysearch;
+	thread_limits = mysearch->thread_limits;
+	options_flags = mysearch->options_flags;
 	/*if the thread number limit is 0, use main thread*/
 	if (thread_limits == 0) {
 		return walk_recur(next);
@@ -517,9 +518,9 @@ int walk_to_next(Node* next) {
 	} else // thread_limits>0
 	{
 		/*lock the counter*/
-		pthread_mutex_lock(&counter_lock);
+		pthread_mutex_lock(&mysearch->lock);
 		/* check if the alive threads is below the thread limits */
-		if (alive_threads < thread_limits) {
+		if (mysearch->alive_threads < thread_limits) {
 			err = pthread_create(&id, &next->stk->attr, search_dir,
 					(void*) next);
 			if (err != 0 && !(options_flags & NO_ERR_MSG)) {
@@ -528,8 +529,8 @@ int walk_to_next(Node* next) {
 		}
 		/* if thread creation succeed, increment the alive threads #*/
 		if (err == 0)
-			alive_threads++;
-		pthread_mutex_unlock(&counter_lock);
+			mysearch->alive_threads++;
+		pthread_mutex_lock(&mysearch->lock);
 	}
 
 	/* if thread creation failed, issue an error and continue with the current thread */

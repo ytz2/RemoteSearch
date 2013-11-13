@@ -20,6 +20,8 @@ void search_given(char *given, search *mysearch)
 	/*get the file info */
 	if (stat(given, &info) == -1) {
 		perror(given);
+		if(mysearch->client_fd>0)
+			send_err_line(mysearch,"%s: %s",given,strerror(errno));
 		return;
 	}
 	/* if it directory */
@@ -30,9 +32,14 @@ void search_given(char *given, search *mysearch)
 		if (mysearch->max_dir_depth == 0) {
 			/*if -q is set */
 			if (!(mysearch->options_flags & NO_ERR_MSG))
-				fprintf(stderr,
+				{
+					fprintf(stderr,
 						"%s is detected to exceed the search limit %d\n",
 						given, mysearch->max_dir_depth);
+					if(mysearch->client_fd>0)
+						send_err_line(mysearch,"%s is detected to exceed the search limit %d",
+								given, mysearch->max_dir_depth);
+				}
 			return;
 		} else {
 			/*allocate space to a history stack*/

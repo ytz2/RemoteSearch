@@ -85,6 +85,7 @@ typedef struct Search_info{
 	int max_dir_depth; /* work with -d number */
 	int client_fd; /* to work with the server */
 	int thread_done; /* to work on server side*/
+	int alive_threads; /* total alive threads */
 	pthread_cond_t ready;
 	pthread_mutex_t lock;
 } search;
@@ -119,5 +120,22 @@ typedef struct Message_one{
 	int thread_limits; /* work with -t number*/
 	int max_dir_depth; /* work with -d number */
 } msg_one;
+
+typedef struct Message_Six{
+	unsigned int link_ignored;
+	unsigned int dir_opened;
+	unsigned int loop_avoided;
+	unsigned int max_depth;
+	unsigned int dot_caught;
+	unsigned int thread_created;
+	unsigned int thread_not_created;
+	unsigned int max_alive;
+	unsigned int err_quiet;
+	unsigned int lines_matched;
+	unsigned int file_read;
+	unsigned int bytes_read;
+	unsigned int search_time;
+	unsigned int process_rate;
+} statistics;
 
 #endif /* COMMAND_UTIL_H_ */
