@@ -104,10 +104,12 @@ client(remote *rmt,search *mysearch)
 		if ((n = our_recv_message(fd, &type, &len,
 				out_buffer)) < 0)
 			break;
-		if (type !=OUTPUT_STD && type!=OUTPUT_ERR)
+		if (type ==OUTPUT_STD)
+			fprintf(stdout, "%s:%s/%s",rmt->node,rmt->port,out_buffer);
+		else if (type==OUTPUT_ERR)
+			fprintf(stderr, "%s:%s/%s",rmt->node,rmt->port,out_buffer);
+		else
 			break;
-		if (type==OUTPUT_STD)
-			fprintf(stdout, "%s:%s/%s\n",rmt->node,rmt->port,out_buffer);
 		fflush(stderr);
 		fflush(stdout);
 	}

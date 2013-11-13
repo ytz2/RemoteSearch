@@ -58,10 +58,46 @@ int search_str(char* buffer, search *mysearch) {
 }/*search_str*/
 
 
+/*
+ * send the stderr msg to client side
+ */
+void send_err_line(search *mysearch,char *format,...)
+{
+	char *err_buffer;
+	unsigned int len;
+	pthread_once(&init_done, thread_init);
+	err_buffer = pthread_getspecific(err_buffer_key);
+	/* allocate memory to buffer*/
+	if (err_buffer == NULL) {
+		err_buffer = (char*) malloc(MAX_TCP_ERR);
+		pthread_setspecific(err_buffer_key, err_buffer);
+	}
+	va_list argptr;
+	va_start(argptr, format);
+	vsprintf(err_buffer, format, argptr);
+	va_end(argptr);
+	len=strlen(err_buffer);
+	err_buffer[len]='\n';
+	err_buffer[++len]='\0';
+	pthread_mutex_lock(&(mysearch->lock));
+		/* send the fourth message */
+	if (our_send_message(mysearch->client_fd, OUTPUT_ERR,len+1,err_buffer) != 0)
+	{
+		fprintf(stderr,"Fail to send %s\n",err_buffer);
+		pthread_mutex_unlock(&(mysearch->lock));
+		return;
+	}
+	pthread_mutex_unlock(&(mysearch->lock));
+}
+
+/* send the std_output from the server side to the client side */
 void send_print_line(int lineno, char* realpath, char* str,int column_number,search *mysearch) {
 
 	const char *temp1, *temp2;
 	char *out_buffer;
+	unsigned int len;
+	out_buffer=NULL;
+	pthread_once(&init_done, thread_init);
 	out_buffer = pthread_getspecific(out_buffer_key);
 		/* allocate memory to buffer*/
 	if (out_buffer == NULL) {
@@ -78,13 +114,21 @@ void send_print_line(int lineno, char* realpath, char* str,int column_number,sea
 	if (column_number > 0)
 		sprintf(out_buffer,"%s%s%*d: %s", temp1, temp2, column_number, lineno, str);
 	else
-		sprintf(out_buffer,"%s%s%s", temp1, temp2, str);
+		sprintf(out_buffer,"%s%s%s",temp1, temp2, str);
+
+	len=strlen(out_buffer);
+	out_buffer[len]='\n';
+	out_buffer[++len]='\0';
+	/* the interface provided by tcpio is not atomic, add a lock */
+	pthread_mutex_lock(&(mysearch->lock));
 	/* send the fourth message */
-	if (our_send_message(mysearch->client_fd, OUTPUT_STD,(strlen(out_buffer)+1)*sizeof(char),out_buffer) != 0)
+	if (our_send_message(mysearch->client_fd, OUTPUT_STD,len+1,out_buffer) != 0)
 	{
 		fprintf(stderr,"Fail to send %s\n",out_buffer);
+		pthread_mutex_unlock(&(mysearch->lock));
 		return;
 	}
+	pthread_mutex_unlock(&(mysearch->lock));
 
 }/*print_line*/
 /*
@@ -158,9 +202,12 @@ void search_stream(FILE *fptr, char* filename, search *mysearch) {
 		trim_line(any_line_buffer);
 		/*if get the match, print the line*/
 		if (search_str(any_line_buffer, mysearch)) {
+			/*if it is on the server side*/
 			if (mysearch->client_fd>0)
+			{
 				send_print_line(lineno, rptr, any_line_buffer,mysearch->column_number,mysearch);
-			else
+			}
+			else /* on the client side */
 				print_line(lineno, rptr, any_line_buffer,mysearch->column_number);
 			output_lineno++;
 		}
@@ -184,7 +231,11 @@ void search_file(char* filename, search *mysearch, int flag) {
 	FILE *fptr;
 	if ((fptr = fopen(filename, "r")) == NULL) {
 		if (flag == 0 || (flag == 1 && !(mysearch->options_flags & NO_ERR_MSG)))
-			perror(filename);
+			{
+				perror(filename);
+				if (mysearch->client_fd>0)
+					send_err_line(mysearch,"%s: %s",filename,strerror(errno));
+			}
 	} else {
 		search_stream(fptr, filename, mysearch);
 		fclose(fptr);

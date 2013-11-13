@@ -84,6 +84,9 @@ typedef struct Search_info{
 	int thread_limits; /* work with -t number*/
 	int max_dir_depth; /* work with -d number */
 	int client_fd; /* to work with the server */
+	int thread_done; /* to work on server side*/
+	pthread_cond_t ready;
+	pthread_mutex_t lock;
 } search;
 
 /*initialize the search request*/

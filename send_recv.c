@@ -55,6 +55,7 @@ our_recv_message(int fd, enum header_types *type, unsigned int *length,
 	*length = ntohl(header.length);
 
 	if (*length > user_data_length) {
+		fprintf(stderr, "Header %u, Length %u\n",*type,*length);
 		fprintf(stderr, "message length %u longer than available "
 				"length %u\n", *length, user_data_length);
 		return -1;

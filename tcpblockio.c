@@ -16,7 +16,7 @@
 
 
 
-#define LISTENING_DEPTH		3
+#define LISTENING_DEPTH		128
 
 
 /* Returns after all nbytes characters from buffer have been written to fd.

@@ -21,7 +21,8 @@ Node* make_node(char *dname, int depth, stack *stk) {
 	Node* temp;
 	DIR *dir;
 	char* rptr, *memptr;
-
+	search *mysearch;
+	mysearch=stk->mysearch;
 	errno = 0;
 	rptr = NULL;
 	memptr = NULL;
@@ -31,13 +32,20 @@ Node* make_node(char *dname, int depth, stack *stk) {
 		/* error report has been done within get_realpath */
 		if (memptr)
 			free(memptr);
+		if ((mysearch->options_flags & NO_ERR_MSG)!=0 && mysearch->client_fd>0)
+			send_err_line(mysearch,"%s: %s",dname,strerror(errno));
 		return NULL;
 	}
 
 	/* open the direcotry with full path */
 	if ((dir = opendir(rptr)) == NULL) {
 		if (!(stk->mysearch->options_flags & NO_ERR_MSG))
+		{
 			perror(rptr);
+			if (mysearch->client_fd>0)
+				send_err_line(mysearch,"%s: %s",rptr,strerror(errno));
+		}
+
 		return NULL;
 	}
 
@@ -131,7 +139,9 @@ int stack_push(stack *st, Node *current, Node *next) {
 
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
 		if (!(st->mysearch->options_flags & NO_ERR_MSG))
+		{
 			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
+		}
 		return err;
 	}
 	return 0;
@@ -181,6 +191,14 @@ int stack_job_done(stack *st, Node *current) {
 	if (temp==NULL)
 		/*if it is the root */
 	{
+		/* on server side turn the waiting condition off*/
+		if (st->mysearch->client_fd>0)
+		{
+			pthread_mutex_lock(&(st->mysearch->lock));
+			st->mysearch->thread_done=1;
+			pthread_mutex_unlock(&(st->mysearch->lock));
+			pthread_cond_signal(&(st->mysearch->ready));
+		}
 		stack_destroy(st);
 		free(st);
 	}
@@ -193,8 +211,10 @@ int stack_job_done(stack *st, Node *current) {
 Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 	int err;
 	Node *temp, *iter;
+	search *mysearch;
+	mysearch=st->mysearch;
 	if ((err = pthread_rwlock_rdlock(&st->s_lock)) != 0) {
-		if (!(st->mysearch->options_flags & NO_ERR_MSG))
+		if (!(mysearch->options_flags & NO_ERR_MSG))
 			fprintf(stderr, "rwlock_rdlock: %s\n", strerror(err));
 		return NULL;
 	}
@@ -205,9 +225,14 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 			break;
 	}
 
-	if (temp != NULL && !(st->mysearch->options_flags & NO_ERR_MSG)) {
-		fprintf(stderr, "%d depth: %s detect a loop\n", current->depth + 1,
-				fullpath);
+	if (temp != NULL && !(mysearch->options_flags & NO_ERR_MSG)) {
+		{
+			fprintf(stderr, "%d depth: %s detect a loop\n", current->depth + 1,
+					fullpath);
+			if (mysearch->client_fd>0)
+				send_err_line(mysearch,"%d depth: %s detect a loop",current->depth + 1,
+						fullpath);
+		}
 		/*
 		 * go back to print all the loop elements in the loop branch
 		 * in the history stack
@@ -215,6 +240,9 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 		for (iter = current; iter != temp->prev; iter = iter->prev) {
 			fprintf(stderr, "%*c%d depth: %s\n", 3 * iter->depth, ' ',
 					iter->depth, iter->path);
+			if (mysearch->client_fd>0)
+				send_err_line(mysearch,"%*c%d depth: %s", 3 * iter->depth, ' ',
+						iter->depth, iter->path);
 			fflush(stderr);
 		}
 	}
@@ -260,7 +288,7 @@ char* get_fullpath(char* rpath, char *fname,int flag) {
  * if it is, return bool 1
  * else false 0,failure -1
  */
-int is_sym_dir(char* full_name,int flag) {
+int is_sym_dir(char* full_name,search *mysearch,int flag) {
 	struct stat st;
 	int val;
 	errno = 0;
@@ -271,6 +299,8 @@ int is_sym_dir(char* full_name,int flag) {
 		/* if the link does not exist, issue error*/
 		if (flag!=0) {
 			perror(full_name);
+			if (mysearch->client_fd>0)
+				send_err_line(mysearch,"%s:%s",full_name,strerror(errno));
 		}
 		val = -1;
 	} else if (S_ISDIR(st.st_mode))
@@ -320,7 +350,11 @@ int walk_recur(Node* current) {
 	while (1) {
 		if ((err = readdir_r(dir, entry, &result)) != 0) {
 			if (!(options_flags & NO_ERR_MSG))
-				perror("readdir_r");
+				{
+					perror("readdir_r");
+					if (mysearch->client_fd>0)
+						send_err_line(mysearch,"%s: %s","readdir_r",strerror(errno));
+				}
 			break;
 		}
 		if (result == NULL) /* just hit EOF */
@@ -346,7 +380,12 @@ int walk_recur(Node* current) {
 		/* get the stat info of subdir/file*/
 		if (lstat(full_path, &st) == -1) {
 			if (!(options_flags & NO_ERR_MSG))
+			{
 				perror(full_path);
+				if (mysearch->client_fd>0)
+					send_err_line(mysearch,"%s: %s",full_path,strerror(errno));
+			}
+
 			free(full_path);
 			continue;
 		}
@@ -355,14 +394,18 @@ int walk_recur(Node* current) {
 			/* if -f is set, do not follow link */
 			if (options_flags & NOT_FOLLOW_LINK) {
 				if (!(options_flags & NO_ERR_MSG))
+				{
 					fprintf(stderr, "Symlink: %s\n", full_path);
+					if (mysearch->client_fd>0)
+						send_err_line(mysearch,"Symlink: %s", full_path);
+				}
 				free(full_path);
 				continue;
 			}
 			/* use stat to follow the symlink to test whether the symlink to
 			 * dir or file exist
 			 */
-			sym_link_flag = is_sym_dir(full_path,!(options_flags & NO_ERR_MSG));
+			sym_link_flag = is_sym_dir(full_path,mysearch,!(options_flags & NO_ERR_MSG));
 			/* if it does not exist, just go to process next one */
 			if (sym_link_flag == -1) {
 				free(full_path);
@@ -378,6 +421,10 @@ int walk_recur(Node* current) {
 					fprintf(stderr,
 							"%s is detected to exceed the search limit %d\n",
 							full_path, stk->mysearch->max_dir_depth);
+					if (mysearch->client_fd>0)
+						send_err_line(mysearch,"%s is detected to exceed the search limit %d",
+								full_path, stk->mysearch->max_dir_depth);
+
 				}
 				free(full_path);
 				continue;

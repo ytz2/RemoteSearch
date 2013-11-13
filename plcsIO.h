@@ -31,7 +31,7 @@
 #include "dirHandle.h"
 #include "send_recv.h"
 #include "thread_share.h"
-
+#include <stdarg.h>
 /*
  * function to create the key
  */
@@ -74,5 +74,10 @@ void search_file(char* filename, search *mysearch,int flag);
  * wrapper function build the shift talbe
  */
 void build_shifttable(search *mysearch);
+
+/*
+ * set err msg to client
+ */
+void send_err_line(search *mysearch,char *format,...);
 
 #endif /* PLCSIO_H_ */

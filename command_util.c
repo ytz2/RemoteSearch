@@ -66,6 +66,9 @@ void init_search(search **my_search)
 	(*my_search)->search_pattern = NULL;
 	(*my_search)->shift_table=NULL;
 	(*my_search)->client_fd=-1;
+	(*my_search)->thread_done=-1;
+	pthread_mutex_init(&((*my_search)->lock),NULL);
+	pthread_cond_init(&((*my_search)->ready),NULL);
 }
 /*destroy the search*/
 void destroy_search(search *mysearch)
@@ -76,6 +79,8 @@ void destroy_search(search *mysearch)
 		free(mysearch->shift_table);
 	if ((mysearch->client_fd)>0)
 	{
+		pthread_mutex_destroy(&(mysearch->lock));
+		pthread_cond_destroy(&(mysearch->ready));
 		close(mysearch->client_fd);
 	}
 	free(mysearch);
