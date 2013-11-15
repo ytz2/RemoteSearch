@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 	Client_para *para;
 	pthread_t id;
 	int err;
-
+	char *temp;
 	/*initialization*/
 	err=0;
 	mysearch=NULL;
@@ -65,14 +65,15 @@ int main(int argc, char *argv[]) {
 	 * directly go to stdin
 	 */
 	if (optind >= argc) {
-		search_stream(stdin, NULL, mysearch);
+		search_stream(stdin, NULL, mysearch,NULL);
 		return 0;
 	}
 
 	/* process the list of files*/
 	for (; optind < argc; optind++) {
 		/* if it a remote search */
-		if ((rmt=scan_remote_search(argv[optind]))!=NULL)
+		temp=argv[optind];
+		if ((rmt=scan_remote_search(temp))!=NULL)
 		{
 			fprintf(stderr,"%s %s %s\n",rmt->node,rmt->port,rmt->name);
 			if ((para=(Client_para*)malloc(sizeof(Client_para)))==NULL)
@@ -83,26 +84,36 @@ int main(int argc, char *argv[]) {
 			para->mysearch=mysearch;
 			para->rmt=rmt;
 			/* spawn a thread the perform remote search*/
+			// increment the stack count
+			pthread_mutex_lock(&(mysearch->lock));
 			err = pthread_create(&id, NULL, client_agent, (void*)para);
+			mysearch->stk_count++;
 			if (err!=0)
 			{
 				fprintf(stderr,"Pthread_create of client\n");
 				free(para);
+				mysearch->stk_count--;
+				pthread_mutex_unlock(&(mysearch->lock));
 				continue;
 			}
+			pthread_mutex_unlock(&(mysearch->lock));
 			continue;
 		}
-		if (strcmp(argv[optind], STREAM_REDIRECT) == 0)
+		if (strcmp(temp, STREAM_REDIRECT) == 0)
 			/* "-" redirect the io to stdin*/
 		{
-			search_stream(stdin, NULL, mysearch);
+			search_stream(stdin, NULL, mysearch,NULL);
 			continue;
 		}
-		search_given(argv[optind],mysearch);
+		search_given(temp,mysearch);
 	}
-	pthread_exit(NULL);
+	while(mysearch->stk_count!=0)
+	{
+		pthread_cond_wait(&(mysearch->ready),&(mysearch->lock));
+	}
+	print_stat(&(mysearch->statistics));
+	destroy_search(mysearch);
 
-	/* it has no real meaning, just to depreciate the compiler warning*/
 	return 0;
 } /* main */
 

@@ -32,7 +32,7 @@ search* build_search(msg_one *flags)
 	mysearch->max_dir_depth=ntohl(flags->max_dir_depth);
 	buffer_size=ntohl(flags->line_buffer_size);
 	if (buffer_size==-1)
-		mysearch->line_buffer_size=MAX_LINE_BUFFER;
+		mysearch->line_buffer_size=DEFAULT_LINE_BUFFER;
 	else
 		mysearch->line_buffer_size=buffer_size;
 	mysearch->max_line_number=ntohl(flags->max_line_number);
@@ -136,6 +136,11 @@ server_agent(void *params)
 	/* do the search job */
 	search_given(remote_obj, mysearch);
 	/* destroy the resoureces */
+	/*wait for directory search to be finished if it is on the server side*/
+	while(mysearch->stk_count!=0)
+	{
+		pthread_cond_wait(&(mysearch->ready),&(mysearch->lock));
+	}
 	destroy_search(mysearch);
 	fprintf(stderr,"server plcsd disconnected from client at "
 		"IP address %s port %d\n", text_buf, ntohs(iptr->sin_port));

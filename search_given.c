@@ -10,6 +10,8 @@
  * a more general search to search a given name from level 0
  */
 #include "search_given.h"
+
+
 void search_given(char *given, search *mysearch)
 {
 	struct stat info;
@@ -57,19 +59,12 @@ void search_given(char *given, search *mysearch)
 				/*push the root node to the stack and kick it off*/
 				stack_push(temp_stk, temp_node, NULL);
 				walk_to_next(temp_node);
-				/*wait for directory search to be finished if it is on the server side*/
-				if (mysearch->client_fd>0){
-					while(mysearch->thread_done!=1)
-					{
-						pthread_cond_wait(&(mysearch->ready),&(mysearch->lock));
-					}
-				}
 			}
 		}
 		return;
 	}
 	else{
-		search_file(given,mysearch, 0);
+		search_file(given,mysearch, NULL);
 	}
 	return;
 }

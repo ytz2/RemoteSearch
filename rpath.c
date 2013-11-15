@@ -56,13 +56,28 @@ char* path_alloc(size_t *sizep) {
  * the memptr is provided outside
  * the memptr must be checked outside to free!!!
  */
-char* get_realpath(char* filename, char **memptr) {
+char* get_realpath(char* filename, char **memptr, Node *current) {
 
 	char *realptr;
 	realptr = NULL;
+	search * mysearch;
+	mysearch=NULL;
+
+	if (current)
+		mysearch=current->stk->mysearch;
 
 	if ((*memptr = path_alloc(NULL)) == NULL)
-		fprintf(stderr, "malloc(): %s %s\n", strerror(errno), filename);
+	{
+		if (current==NULL || (current!=NULL && !(mysearch->options_flags & NO_ERR_MSG)))
+			{
+				fprintf(stderr, "malloc(): %s %s\n", strerror(errno), filename);
+				send_err_line(mysearch,"malloc(): %s %s\n", strerror(errno), filename);
+			}
+		else if (current && (mysearch->options_flags & NO_ERR_MSG))
+		{
+			(current->statistics).err_quiet++;
+		}
+	}
 	else {
 		realptr = realpath(filename, *memptr);
 		if (realptr == NULL) {

@@ -25,37 +25,6 @@
 #include "plcsIO.h"
 #include "thread_share.h"
 
-/* define the element structure for history stack */
-typedef struct STACK stack; //pre declaration
-typedef struct NODE {
-	unsigned long counter; // counter of reference to itself
-	char *path; //realpath
-	DIR *dir; //the dir object
-	struct NODE *prev; // link to its previous node
-	int depth;
-	stack *stk;
-} Node;
-
-/*
- * the stack type is made independent of Node
- * in order to provide a better interface
- */
-struct STACK {
-	/*the head or root is useless, but leave it here in case useful tomorrow*/
-	Node *head;
-	/*
-	 * the stack is protected by rwlock, since most of time is not doing push
-	 * but doing the searching whether a realpath used to appear
-	 */
-	pthread_rwlock_t s_lock;
-	/*
-	 * the attribute will be set to be detached to make sure onece
-	 * a thread finished, the resource of that thread releases in time.
-	 */
-	pthread_attr_t attr;
-	search *mysearch;
-};
-
 /*
  * make a history stack node
  */

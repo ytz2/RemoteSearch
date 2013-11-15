@@ -59,7 +59,7 @@ void print_line(int lineno, char* realpath, char* str,int colum_number);
  * or default value into any_line_buffer
  * search and print it
  */
-void search_stream(FILE *input, char* filename, search *mysearch);
+void search_stream(FILE *input, char* filename, search *mysearch,Node* current);
 
 
 /*
@@ -68,7 +68,7 @@ void search_stream(FILE *input, char* filename, search *mysearch);
  * but add another flag to indicate it is in sub directory
  * tow work well with -q
  */
-void search_file(char* filename, search *mysearch,int flag);
+void search_file(char* filename, search *mysearch,Node *current);
 
 /*
  * wrapper function build the shift talbe

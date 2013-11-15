@@ -160,14 +160,18 @@ void print_line(int lineno, char* realpath, char* str,int column_number) {
  * or default value into any_line_buffer
  * search and print it
  */
-void search_stream(FILE *fptr, char* filename, search *mysearch) {
+void search_stream(FILE *fptr, char* filename, search *mysearch, Node* current) {
 	int lineno;
 	int output_lineno;
 	char* rptr, *memptr, *any_line_buffer;
+	unsigned int bytes, lines_read,lines_matched;
 	/*initialize the rptr*/
 	rptr = NULL;
 	memptr = NULL;
 	output_lineno = 1;
+	bytes=0;
+	lines_read=0;
+	lines_matched=0;
 	pthread_once(&init_done, thread_init);
 	any_line_buffer = pthread_getspecific(line_buffer_key);
 	/* allocate memory to buffer*/
@@ -181,9 +185,10 @@ void search_stream(FILE *fptr, char* filename, search *mysearch) {
 	 * get the realpath for printing purpose
 	 */
 	if ((fptr != stdin) && (mysearch->options_flags & SHOW_PATH))
-		rptr = get_realpath(filename, &memptr);
+		rptr = get_realpath(filename, &memptr,current);
 
-	/*process each line in the input*/errno = 0;
+	/*process each line in the input*/
+	errno = 0;
 	for (lineno = 1;
 			!feof(fptr)
 					&& fgets(any_line_buffer, mysearch->line_buffer_size + 1, fptr)
@@ -199,6 +204,8 @@ void search_stream(FILE *fptr, char* filename, search *mysearch) {
 			clearerr(fptr);
 			break;
 		}
+		lines_read++;
+		bytes+=strlen(any_line_buffer);
 		trim_line(any_line_buffer);
 		/*if get the match, print the line*/
 		if (search_str(any_line_buffer, mysearch)) {
@@ -210,7 +217,32 @@ void search_stream(FILE *fptr, char* filename, search *mysearch) {
 			else /* on the client side */
 				print_line(lineno, rptr, any_line_buffer,mysearch->column_number);
 			output_lineno++;
+			lines_matched++;
 		}
+	}
+	/* if it is a file under dir */
+	if (current)
+	{
+		(current->statistics).lines_matched+=lines_matched;
+		(current->statistics).bytes_read+=bytes;
+		(current->statistics).lines_read+=lines_read;
+		(current->statistics).file_read++;
+	}
+	else
+	{
+		pthread_mutex_lock(&(mysearch->lock));
+		/* if it is level 0 do it here */
+		(mysearch->statistics).lines_read+=lines_read;
+		(mysearch->statistics).file_read++;
+
+		/* if it is a level 0 file, update the corresponding field */
+		if (fptr!=stdin)
+		{
+			(mysearch->statistics).lines_matched+=lines_matched;
+			(mysearch->statistics).bytes_read+=bytes;
+		}
+		/*if it is level 0 file */
+		pthread_mutex_unlock(&(mysearch->lock));
 	}
 	/*free the real path memory*/
 	if (memptr != NULL)
@@ -221,23 +253,26 @@ void search_stream(FILE *fptr, char* filename, search *mysearch) {
 
 /*
  * search_file
- * accept a filename and a search string to perform a search
- * but add another flag to indicate it is in sub directory
- * tow work well with -q, the flag is not passed to search_stream
- * since when dealing with subdirectories, the stat will follow all
- * the way down and if any problem occurs, stat can issue error
+ * accept a filename and a search object to perform search
+ * if current is set, it is a search under directory do
+ * some error check and sending
  */
-void search_file(char* filename, search *mysearch, int flag) {
+void search_file(char* filename, search *mysearch, Node *current) {
 	FILE *fptr;
 	if ((fptr = fopen(filename, "r")) == NULL) {
-		if (flag == 0 || (flag == 1 && !(mysearch->options_flags & NO_ERR_MSG)))
+		/* if it is under level 0 or under dir but set not quiet, issue error */
+		if (current==NULL || (current!=NULL && !(mysearch->options_flags & NO_ERR_MSG)))
 			{
 				perror(filename);
 				if (mysearch->client_fd>0)
 					send_err_line(mysearch,"%s: %s",filename,strerror(errno));
 			}
+			else
+			{
+				(current->statistics).err_quiet++;
+			}
 	} else {
-		search_stream(fptr, filename, mysearch);
+		search_stream(fptr, filename, mysearch,current);
 		fclose(fptr);
 	}
 

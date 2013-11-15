@@ -16,7 +16,7 @@ void build_msg1(msg_one *msg1,search *mysearch)
 	msg1->options_flags=htonl(mysearch->options_flags);
 	msg1->max_dir_depth=htonl(mysearch->max_dir_depth);
 	msg1->line_buffer_size=htonl(mysearch->line_buffer_size);
-	if (mysearch->line_buffer_size==MAX_LINE_BUFFER)
+	if (mysearch->line_buffer_size==DEFAULT_LINE_BUFFER)
 		msg1->max_line_number=htonl(-1);
 	else
 		msg1->max_line_number=htonl(mysearch->max_line_number);
@@ -24,6 +24,15 @@ void build_msg1(msg_one *msg1,search *mysearch)
 	msg1->thread_limits=htonl(mysearch->thread_limits);
 }
 
+static void cleanup_client(void *arg)
+{
+	search* mysearch;
+	mysearch=(search*)arg;
+	pthread_mutex_lock(&(mysearch->lock));
+	mysearch->stk_count--;
+	pthread_cond_signal(&(mysearch->ready));
+	pthread_mutex_unlock(&(mysearch->lock));
+}
 void
 client(remote *rmt,search *mysearch)
 {
@@ -38,20 +47,20 @@ client(remote *rmt,search *mysearch)
 
 	/*prepare for message 1*/
 	build_msg1(&msg1,mysearch);
-
+	pthread_cleanup_push(cleanup_client,mysearch);
 	/* ignore sigpipe signals -- handle the error synchronously */
 	no_sigpipe();
 
 	/* establish a connection to indicated server */
 	fd = openclient(rmt->port,rmt->node, &server, &client);
 	if (fd < 0)
-		exit(EXIT_FAILURE);
+		pthread_exit(NULL);
 	/* we are now successfully connected to a remote server */
 	iptr = (struct sockaddr_in *)&client;
 	if (inet_ntop(iptr->sin_family, &iptr->sin_addr, text_buf, TEXT_SIZE)
 								== NULL) {
 		perror("inet_ntop client");
-		exit(EXIT_FAILURE);
+		pthread_exit(NULL);
 	}
 	printf("client1tcp at IP address %s port %d\n", 
 		text_buf, ntohs(iptr->sin_port));
@@ -59,7 +68,7 @@ client(remote *rmt,search *mysearch)
 	if (inet_ntop(iptr->sin_family, &iptr->sin_addr, text_buf, TEXT_SIZE)
 								== NULL) {
 		perror("inet_ntop server");
-		exit(EXIT_FAILURE);
+		pthread_exit(NULL);
 	}
 	printf("client1tcp connected to server at IP address %s port %d\n",
 		text_buf, ntohs(iptr->sin_port));
@@ -115,10 +124,11 @@ client(remote *rmt,search *mysearch)
 	}
 
 
+	pthread_cleanup_pop(1);
 	/* close the connection to the server */
 	if (close(fd) < 0) {
 		perror("client1tcp close");
-		exit(EXIT_FAILURE);
+		pthread_exit(NULL);
 	}
 }	/* client */
 

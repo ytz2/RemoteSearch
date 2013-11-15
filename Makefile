@@ -28,14 +28,18 @@ all: $(EXECUTABLES)
 
 
 rplcs: rplcs.o plcsIO.o command_util.o str_search.o rpath.o ospenv.h \
-	dirHandle.o client.o no_sigpipe.o tcpblockio.o send_recv.o search_given.o  thread_share.o
+	dirHandle.o client.o no_sigpipe.o tcpblockio.o send_recv.o \
+	search_given.o  thread_share.o
 	$(CC) $(CFLAGS) $(LDFLAGS)  rplcs.o plcsIO.o command_util.o rpath.o \
-	str_search.o dirHandle.o client.o no_sigpipe.o tcpblockio.o send_recv.o search_given.o thread_share.o -o rplcs
+	str_search.o dirHandle.o client.o no_sigpipe.o tcpblockio.o send_recv.o \
+	search_given.o thread_share.o -o rplcs
 
 rplcsd: server.o rplcsd.o tcpblockio.o no_sigpipe.o \
-		send_recv.o plcsIO.o str_search.o rpath.o dirHandle.o search_given.o thread_share.o
-	$(CC) $(CFLAGS) $(LDFLAGS) server.o rplcsd.o tcpblockio.o no_sigpipe.o command_util.o \
-		send_recv.o plcsIO.o str_search.o rpath.o dirhandle.o search_given.o thread_share.o -o rplcsd 
+		send_recv.o plcsIO.o str_search.o rpath.o dirHandle.o \
+		search_given.o thread_share.o
+	$(CC) $(CFLAGS) $(LDFLAGS) server.o rplcsd.o tcpblockio.o \
+	no_sigpipe.o command_util.o send_recv.o plcsIO.o str_search.o \
+	rpath.o dirhandle.o search_given.o thread_share.o -o rplcsd 
 
 dirHandle.o:  ospenv.h rpath.h dirHandle.h thread_share.h
 	$(CC) $(CFLAGS)  -c dirHandle.c
@@ -46,10 +50,12 @@ rplcs.o: rplcs.c  str_search.h command_util.h ospenv.h
 rplcsd.o: rplcsd.c server.h
 	$(CC) $(CFLAGS)  -c rplcsd.c
 	
-client.o:	client.c client.h no_sigpipe.h tcpblockio.h send_recv.h command_util.h thread_share.h
+client.o:	client.c client.h no_sigpipe.h tcpblockio.h \
+send_recv.h command_util.h thread_share.h
 	$(CC)	$(CFLAGS) -c client.c
 
-server.o:   server.c server.h no_sigpipe.h tcpblockio.h send_recv.h command_util.h plcsIO.h search_given.h thread_share.h
+server.o:   server.c server.h no_sigpipe.h tcpblockio.h send_recv.h \
+ command_util.h plcsIO.h search_given.h thread_share.h
 	$(CC)	$(CFLAGS) -c server.c
 	
 plcsIO.o: plcsIO.h plcsIO.c str_search.h ospenv.h client.h send_recv.h thread_share.h
@@ -73,7 +79,8 @@ tcpblockio.o:	tcpblockio.c tcpblockio.h
 no_sigpipe.o:	no_sigpipe.c no_sigpipe.h
 	$(CC)	$(CFLAGS) -c no_sigpipe.c
 	
-search_given.o: search_given.h search_given.c ospenv.h command_util.h str_search.h rpath.h dirHandle.h \
+search_given.o: search_given.h search_given.c ospenv.h command_util.h \
+	str_search.h rpath.h dirHandle.h \
 	plcsIO.h client.h
 	$(CC)	$(CFLAGS) -c search_given.c
 thread_share.o: thread_share.h thread_share.c global.h

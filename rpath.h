@@ -20,7 +20,8 @@
 #include <errno.h>
 #include <string.h>
 #include <limits.h>
-
+#include "command_util.h"
+#include "plcsIO.h"
 #define PATH_MAX_GUESS 8192
 
 /*
@@ -36,6 +37,6 @@ char* path_alloc(size_t *sizep);
  * get_realpath
  * return the realpath of a file
  */
-char* get_realpath(char* filename, char** memptr);
+char* get_realpath(char* filename, char** memptr, Node* current);
 
 #endif /* RPATH_H_ */

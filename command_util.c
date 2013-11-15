@@ -58,7 +58,7 @@ void init_search(search **my_search)
 		exit(EXIT_FAILURE);
 	}
 	(*my_search)->options_flags = 0; /* default flag */
-	(*my_search)->line_buffer_size =MAX_LINE_BUFFER;
+	(*my_search)->line_buffer_size =DEFAULT_LINE_BUFFER;
 	(*my_search)->max_line_number = -1;
 	(*my_search)->column_number = -1;
 	(*my_search)->thread_limits = -1;
@@ -66,8 +66,11 @@ void init_search(search **my_search)
 	(*my_search)->search_pattern = NULL;
 	(*my_search)->shift_table=NULL;
 	(*my_search)->client_fd=-1;
-	(*my_search)->thread_done=-1;
+	//(*my_search)->thread_done=-1;
+	(*my_search)->stk_count=0;
 	(*my_search)->alive_threads=0;
+	/* set the statistical table value to 0 */
+	memset(&(*my_search)->statistics, 0, sizeof(Statistics));
 	pthread_mutex_init(&((*my_search)->lock),NULL);
 	pthread_cond_init(&((*my_search)->ready),NULL);
 }
@@ -292,3 +295,87 @@ remote* scan_remote_search(char *input)
 
 	return rmt;
 }
+
+void add_one_line(char* buff, char *info, unsigned int val)
+{
+	char line_buff[RIGHT_JUST*2];
+	const char *fmt="%*s   %u\n";
+	sprintf(line_buff,fmt,RIGHT_JUST,info,val);
+	strcat(buff,line_buff);;
+}
+
+/*print the statistics*/
+void print_stat(Statistics *statistics)
+{
+	char buffer[RIGHT_JUST*2*17];
+	char *info;
+	char line_buff[RIGHT_JUST*2];
+
+	fflush(stdout);
+	sprintf(line_buff,"%*s   %s\n",RIGHT_JUST,"label","statistics");
+	strcat(buffer,line_buff);
+
+	info="Total soft links ignored due to -f";
+	add_one_line(buffer,info,statistics->link_ignored);
+
+	info="Total directories opened successfully";
+	add_one_line(buffer,info,statistics->dir_opened);
+
+	info="Total directory loops avoided";
+	add_one_line(buffer,info,statistics->loop_avoided);
+
+	info="Total directory descents pruned by -d";
+	add_one_line(buffer,info,statistics->dir_pruned);
+
+	info="Maximum directory descent depth";
+	add_one_line(buffer,info,statistics->max_depth);
+
+	info="Total dot names not ignored due to -a";
+	add_one_line(buffer,info,statistics->dot_caught);
+
+	info="Total descent threads created";
+	add_one_line(buffer,info,statistics->thread_created);
+
+	info="Total descent threads pruned by -t";
+	add_one_line(buffer,info,statistics->thread_not_created);
+
+	info="Maximum simultaneously active descent threads";
+	add_one_line(buffer,info,statistics->max_alive);
+
+	info="Total errors not printed due to -q";
+	add_one_line(buffer,info,statistics->err_quiet);
+
+	info="Total lines matched";
+	add_one_line(buffer,info,statistics->lines_matched);
+
+	info="Total lines read";
+	add_one_line(buffer,info,statistics->lines_read);
+
+	info="Total files read";
+	add_one_line(buffer,info,statistics->file_read);
+
+	info="Total bytes read";
+	add_one_line(buffer,info,statistics->bytes_read);
+
+
+	printf("%s",buffer);
+	fflush(stdout);
+}
+
+
+void update_statistics(Statistics *root, Statistics *node)
+{
+	root->link_ignored+=node->link_ignored;
+	root->dir_opened+=node->dir_opened;
+	root->loop_avoided+=node->loop_avoided;
+	root->dir_pruned+=node->dir_pruned;
+	root->max_depth=MAX(root->max_depth,node->max_depth);
+	root->dot_caught+=node->dot_caught;
+	/* the thread related have been directly updated to mysearch obj */
+	root->err_quiet+=node->err_quiet;
+	root->lines_matched+=node->lines_matched;
+	root->lines_read+=node->lines_read;
+	root->file_read+=node->file_read;
+	root->bytes_read+=node->bytes_read;
+}
+

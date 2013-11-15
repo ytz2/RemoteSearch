@@ -17,6 +17,8 @@
 #include <string.h>
 #include <limits.h>
 #include <pthread.h>
+#include <dirent.h>
+#include <sys/stat.h>
 /* predefine parameters to work with getopt interface*/
 
 #define OPTIONS ":hbeipvafql:m:n:d:t:"
@@ -51,6 +53,110 @@
 
 #define MAX_TCP_STD 4096*2
 #define MAX_TCP_ERR MAX_TCP_STD
+#define RIGHT_JUST 55
+
+#define MAX(a, b)  (((a) > (b)) ? (a) : (b))
+
+
+
+typedef struct Message_Six{
+	unsigned int link_ignored; /*total link ignored*/
+	unsigned int dir_opened; /*total dir opened*/
+	unsigned int loop_avoided; /* total loop avoided */
+	unsigned int dir_pruned; /* dir get pruend by -d */
+	unsigned int max_depth; /*max descent */
+	unsigned int dot_caught; /* dot not ignored */
+	unsigned int thread_created; /* total thread created */
+	unsigned int thread_not_created; /* thread not created due to -t */
+	unsigned int max_alive; /* max simutaneous alive thread*/
+	unsigned int err_quiet; /* msg due to -q */
+	unsigned int lines_matched; /* lines get matched */
+	unsigned int lines_read; /*total lines get read*/
+	unsigned int file_read;
+	unsigned int bytes_read;
+	unsigned int search_time;
+	unsigned int process_rate;
+} Statistics;
+
+
+
+/*wrap the command parameters to a structure to faciliate
+ * the assignment 3
+ */
+typedef struct Search_info{
+	unsigned int options_flags; /* work with switch options_flags*/
+	int *shift_table; /* shift table*/
+	int line_buffer_size; /* work with -l number*/
+	int max_line_number; /* work with -m number*/
+	int column_number; /* work with -n number*/
+	char *search_pattern; /* the search pattern*/
+	int thread_limits; /* work with -t number*/
+	int max_dir_depth; /* work with -d number */
+	int client_fd; /* to work with the server */
+	//int thread_done; /* to work on server side*/
+	unsigned int stk_count;
+	int alive_threads; /* total alive threads */
+	Statistics statistics; /* structure to contain the statistics */
+	pthread_cond_t ready;
+	pthread_mutex_t lock;
+} search;
+
+
+typedef struct Remote{
+	char node[HOSTMAX+1];
+	char port[PORT_MAX+1];
+	char name[REMOTE_NAME_MAX+1];
+} remote; /* node:port/name */
+
+
+typedef struct Client_parameters{
+	remote* rmt;
+	search* mysearch;
+} Client_para;
+
+typedef struct Message_one{
+	unsigned int options_flags; /* work with switch options_flags*/
+	int line_buffer_size; /* work with -l number*/
+	int max_line_number; /* work with -m number*/
+	int column_number; /* work with -n number*/
+	int thread_limits; /* work with -t number*/
+	int max_dir_depth; /* work with -d number */
+} msg_one;
+/* define the element structure for history stack */
+typedef struct STACK stack; //pre declaration
+typedef struct NODE {
+	unsigned long counter; // counter of reference to itself
+	char *path; //realpath
+	DIR *dir; //the dir object
+	struct NODE *prev; // link to its previous node
+	int depth;
+	stack *stk;
+	Statistics statistics; /* statistics to report */
+} Node;
+
+/*
+ * the stack type is made independent of Node
+ * in order to provide a better interface
+ */
+struct STACK {
+	/*the head or root is useless, but leave it here in case useful tomorrow*/
+	Node *head;
+	/*
+	 * the stack is protected by rwlock, since most of time is not doing push
+	 * but doing the searching whether a realpath used to appear
+	 */
+	pthread_rwlock_t s_lock;
+	/*
+	 * the attribute will be set to be detached to make sure onece
+	 * a thread finished, the resource of that thread releases in time.
+	 */
+	pthread_attr_t attr;
+	Statistics statistics;
+	search *mysearch;
+};
+
+
+
 
 /* Function Utilities*/
 
@@ -70,26 +176,6 @@ trim_line(char *buffer);
 /* print the flag value, this is used to debug*/
 void print_flag(unsigned int flags, unsigned int this_one, char *name);
 
-
-/*wrap the command parameters to a structure to faciliate
- * the assignment 3
- */
-typedef struct Search_info{
-	unsigned int options_flags; /* work with switch options_flags*/
-	int *shift_table; /* shift table*/
-	int line_buffer_size; /* work with -l number*/
-	int max_line_number; /* work with -m number*/
-	int column_number; /* work with -n number*/
-	char *search_pattern; /* the search pattern*/
-	int thread_limits; /* work with -t number*/
-	int max_dir_depth; /* work with -d number */
-	int client_fd; /* to work with the server */
-	int thread_done; /* to work on server side*/
-	int alive_threads; /* total alive threads */
-	pthread_cond_t ready;
-	pthread_mutex_t lock;
-} search;
-
 /*initialize the search request*/
 void init_search(search **mysearch);
 /*destroy the search*/
@@ -97,45 +183,12 @@ void destroy_search(search *mysearch);
 /* wrapper of getopt function */
 void scan_opt_search(int argc,char *argv[],search *mysearch);
 
-
-typedef struct Remote{
-	char node[HOSTMAX+1];
-	char port[PORT_MAX+1];
-	char name[REMOTE_NAME_MAX+1];
-} remote; /* node:port/name */
-
 /* check if the list of file contain the : to indicate a remote search */
 remote* scan_remote_search(char *input);
 
-typedef struct Client_parameters{
-	remote* rmt;
-	search* mysearch;
-} Client_para;
+/*print the statistics*/
+void print_stat(Statistics *statistics);
 
-typedef struct Message_one{
-	unsigned int options_flags; /* work with switch options_flags*/
-	int line_buffer_size; /* work with -l number*/
-	int max_line_number; /* work with -m number*/
-	int column_number; /* work with -n number*/
-	int thread_limits; /* work with -t number*/
-	int max_dir_depth; /* work with -d number */
-} msg_one;
-
-typedef struct Message_Six{
-	unsigned int link_ignored;
-	unsigned int dir_opened;
-	unsigned int loop_avoided;
-	unsigned int max_depth;
-	unsigned int dot_caught;
-	unsigned int thread_created;
-	unsigned int thread_not_created;
-	unsigned int max_alive;
-	unsigned int err_quiet;
-	unsigned int lines_matched;
-	unsigned int file_read;
-	unsigned int bytes_read;
-	unsigned int search_time;
-	unsigned int process_rate;
-} statistics;
+void update_statistics(Statistics *root, Statistics *node);
 
 #endif /* COMMAND_UTIL_H_ */
