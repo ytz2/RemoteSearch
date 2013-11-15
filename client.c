@@ -118,6 +118,7 @@ client(remote *rmt,search *mysearch)
 		else if (type==OUTPUT_ERR)
 			fprintf(stderr, "%s:%s/%s",rmt->node,rmt->port,out_buffer);
 		else
+
 			break;
 		fflush(stderr);
 		fflush(stdout);
