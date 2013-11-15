@@ -16,7 +16,7 @@
 
 #include "tcpblockio.h"
 #include "no_sigpipe.h"
-enum header_types {OPTION_PARAMETER=1, TO_SEARCH, REMOTE_NAME,OUTPUT_STD,OUTPUT_ERR,STATISTICS};
+enum header_types {OPTION_PARAMETER=1, TO_SEARCH, REMOTE_NAME,OUTPUT_STD,OUTPUT_ERR,STATISTICS_MSG};
 
 /* fixed-size message header, all fields in network byte order */
 struct our_header {

@@ -44,6 +44,8 @@ client(remote *rmt,search *mysearch)
 	enum header_types	type;
 	msg_one msg1;
 	char *out_buffer;
+	Statistics *temp;
+	temp=NULL;
 
 	/*prepare for message 1*/
 	build_msg1(&msg1,mysearch);
@@ -117,8 +119,15 @@ client(remote *rmt,search *mysearch)
 			fprintf(stdout, "%s:%s/%s",rmt->node,rmt->port,out_buffer);
 		else if (type==OUTPUT_ERR)
 			fprintf(stderr, "%s:%s/%s",rmt->node,rmt->port,out_buffer);
+		else if (type==STATISTICS_MSG)
+		{
+			temp=(Statistics *)out_buffer;
+			pthread_mutex_lock(&(mysearch->lock));
+			update_statistics_sock(&(mysearch->statistics), temp);
+			pthread_mutex_unlock(&(mysearch->lock));
+			break;
+		}
 		else
-
 			break;
 		fflush(stderr);
 		fflush(stdout);

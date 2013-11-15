@@ -305,12 +305,13 @@ void add_one_line(char* buff, char *info, unsigned int val)
 }
 
 /*print the statistics*/
-void print_stat(Statistics *statistics)
+void print_stat(Statistics *statistics,double tdiff)
 {
 	char buffer[RIGHT_JUST*2*17];
 	char *info;
 	char line_buff[RIGHT_JUST*2];
-
+	double rate;
+	rate=0.;
 	fflush(stdout);
 	sprintf(line_buff,"%*s   %s\n",RIGHT_JUST,"label","statistics");
 	strcat(buffer,line_buff);
@@ -357,7 +358,14 @@ void print_stat(Statistics *statistics)
 	info="Total bytes read";
 	add_one_line(buffer,info,statistics->bytes_read);
 
-
+	info="Total search time in seconds";
+	sprintf(line_buff,"%*s   %.6f\n",RIGHT_JUST,info,tdiff);
+	strcat(buffer,line_buff);
+	if (tdiff !=0.)
+		rate=((double)statistics->bytes_read)/(1000000.*tdiff);
+	info="Processing rate in megabytes per second";
+	sprintf(line_buff,"%*s   %.6f\n",RIGHT_JUST,info,rate);
+	strcat(buffer,line_buff);
 	printf("%s",buffer);
 	fflush(stdout);
 }
@@ -379,3 +387,10 @@ void update_statistics(Statistics *root, Statistics *node)
 	root->bytes_read+=node->bytes_read;
 }
 
+void update_statistics_sock(Statistics *root, Statistics *node)
+{
+	update_statistics(root,node);
+	root->thread_created+=node->thread_created;
+	root->thread_not_created+=node->thread_not_created;
+	root->max_alive=MAX(root->max_alive,node->max_alive);
+}

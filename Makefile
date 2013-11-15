@@ -18,7 +18,11 @@ endif
 LDFLAGS = -lpthread 
 
 ifeq  ($(shell uname -s), SunOS)
-  LDFLAGS += -lnsl -lsocket
+  LDFLAGS += -lnsl -lsocket -lrt
+endif
+
+ifneq  ($(shell uname -s), Darwin)
+  LDFLAGS += -lrt
 endif
 
 EXECUTABLES = rplcs rplcsd
@@ -29,22 +33,22 @@ all: $(EXECUTABLES)
 
 rplcs: rplcs.o plcsIO.o command_util.o str_search.o rpath.o ospenv.h \
 	dirHandle.o client.o no_sigpipe.o tcpblockio.o send_recv.o \
-	search_given.o  thread_share.o
+	search_given.o  thread_share.o print_time.o
 	$(CC) $(CFLAGS) $(LDFLAGS)  rplcs.o plcsIO.o command_util.o rpath.o \
 	str_search.o dirHandle.o client.o no_sigpipe.o tcpblockio.o send_recv.o \
-	search_given.o thread_share.o -o rplcs
+	search_given.o thread_share.o print_time.o -o rplcs
 
 rplcsd: server.o rplcsd.o tcpblockio.o no_sigpipe.o \
 		send_recv.o plcsIO.o str_search.o rpath.o dirHandle.o \
-		search_given.o thread_share.o
+		search_given.o thread_share.o print_time.o
 	$(CC) $(CFLAGS) $(LDFLAGS) server.o rplcsd.o tcpblockio.o \
 	no_sigpipe.o command_util.o send_recv.o plcsIO.o str_search.o \
-	rpath.o dirhandle.o search_given.o thread_share.o -o rplcsd 
+	rpath.o dirhandle.o search_given.o thread_share.o print_time.o -o rplcsd 
 
 dirHandle.o:  ospenv.h rpath.h dirHandle.h thread_share.h
 	$(CC) $(CFLAGS)  -c dirHandle.c
 
-rplcs.o: rplcs.c  str_search.h command_util.h ospenv.h
+rplcs.o: rplcs.c  str_search.h command_util.h ospenv.h print_time.h
 	$(CC) $(CFLAGS)  -c rplcs.c
 
 rplcsd.o: rplcsd.c server.h
@@ -54,7 +58,7 @@ client.o:	client.c client.h no_sigpipe.h tcpblockio.h \
 send_recv.h command_util.h thread_share.h
 	$(CC)	$(CFLAGS) -c client.c
 
-server.o:   server.c server.h no_sigpipe.h tcpblockio.h send_recv.h \
+server.o:   server.c server.h no_sigpipe.h tcpblockio.h send_recv.h print_time.h \
  command_util.h plcsIO.h search_given.h thread_share.h
 	$(CC)	$(CFLAGS) -c server.c
 	
@@ -85,5 +89,7 @@ search_given.o: search_given.h search_given.c ospenv.h command_util.h \
 	$(CC)	$(CFLAGS) -c search_given.c
 thread_share.o: thread_share.h thread_share.c global.h
 	$(CC)	$(CFLAGS) -c thread_share.c
+print_time.o: print_time.h print_time.c
+	$(CC)	$(CFLAGS) -c print_time.c
 clean:
 	rm -rf *.o *~ $(EXECUTABLES)

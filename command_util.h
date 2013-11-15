@@ -74,8 +74,6 @@ typedef struct Message_Six{
 	unsigned int lines_read; /*total lines get read*/
 	unsigned int file_read;
 	unsigned int bytes_read;
-	unsigned int search_time;
-	unsigned int process_rate;
 } Statistics;
 
 
@@ -187,8 +185,8 @@ void scan_opt_search(int argc,char *argv[],search *mysearch);
 remote* scan_remote_search(char *input);
 
 /*print the statistics*/
-void print_stat(Statistics *statistics);
+void print_stat(Statistics *statistics,double tdiff);
 
 void update_statistics(Statistics *root, Statistics *node);
-
+void update_statistics_sock(Statistics *root, Statistics *node);
 #endif /* COMMAND_UTIL_H_ */

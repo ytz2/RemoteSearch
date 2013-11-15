@@ -73,6 +73,8 @@ server_agent(void *params)
 	char to_search[MAX_SEARCH_STR];
 	char			text_buf[TEXT_SIZE];
 	char remote_obj[REMOTE_NAME_MAX];
+	time_type t_start,t_end;
+	double tdiff;
 	msg_one msg1;
 	search *mysearch;
 	errcode = pthread_detach(pthread_self());
@@ -93,6 +95,7 @@ server_agent(void *params)
 	fprintf(stderr,"server plcsd connected to client at IP address %s "
 		"port %d\n", text_buf, ntohs(iptr->sin_port));
 
+	get_time(&t_start);
 	len=sizeof(msg_one);
 	/* first message should be the file name */
 	if ((n = our_recv_message(client_fd, &type, &len,
@@ -135,12 +138,25 @@ server_agent(void *params)
 		return NULL;
 	/* do the search job */
 	search_given(remote_obj, mysearch);
-	/* destroy the resoureces */
+
+	/* send the statistics message 6*/
 	/*wait for directory search to be finished if it is on the server side*/
 	while(mysearch->stk_count!=0)
 	{
 		pthread_cond_wait(&(mysearch->ready),&(mysearch->lock));
 	}
+
+	len=sizeof(Statistics);
+	if (our_send_message(mysearch->client_fd, STATISTICS_MSG,len,&mysearch->statistics) != 0)
+	{
+		fprintf(stderr,"Fail to send statistics\n");
+		return NULL;
+	}
+	get_time(&t_end);
+	tdiff=time_diff(&t_start,&t_end);
+	fprintf(stdout,"Search Statistics: client fd %u, thread id %lu\n",
+			mysearch->client_fd,(unsigned long)pthread_self());
+	print_stat(&mysearch->statistics,tdiff);
 	destroy_search(mysearch);
 	fprintf(stderr,"server plcsd disconnected from client at "
 		"IP address %s port %d\n", text_buf, ntohs(iptr->sin_port));

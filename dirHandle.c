@@ -26,7 +26,7 @@ Node* make_node(char *dname, int depth, stack *stk) {
 
 	/* give space to a node */
 	if ((temp = (Node*) malloc(sizeof(Node))) == NULL) {
-		if (!(stk->mysearch->options_flags & NO_ERR_MSG))
+//		if (!(stk->mysearch->options_flags & NO_ERR_MSG))
 			perror("malloc()");
 		return NULL;
 	}
@@ -53,9 +53,16 @@ Node* make_node(char *dname, int depth, stack *stk) {
 	if ((dir = opendir(rptr)) == NULL) {
 		if (!(stk->mysearch->options_flags & NO_ERR_MSG))
 		{
+			/* if -q is not set */
 			perror(rptr);
 			if (mysearch->client_fd>0)
 				send_err_line(mysearch,"%s: %s",rptr,strerror(errno));
+		} else
+		{
+			/* since it will be deleted, we directly update to mysearch*/
+			pthread_mutex_lock(&(mysearch->lock));
+			(mysearch->statistics).err_quiet++;
+			pthread_mutex_unlock(&(mysearch->lock));
 		}
 		free(memptr);
 		free(temp);
@@ -73,7 +80,7 @@ Node* make_node(char *dname, int depth, stack *stk) {
 	temp->stk = stk;
 	memset(&temp->statistics,0, sizeof(Statistics));
 	return temp;
-}
+}/* Node* make_node  */
 
 /*
  * do some housekeeping about a node
@@ -93,7 +100,9 @@ int stack_init(stack *st) {
 	st->head = NULL;
 	memset(&(st->statistics), 0, sizeof(Statistics));
 
-	// increment the stack count
+	/* increment the stack count to keep track of
+	 * how many stack in heap
+	 */
 	pthread_mutex_lock(&(st->mysearch->lock));
 	st->mysearch->stk_count++;
 	pthread_mutex_unlock(&(st->mysearch->lock));
@@ -135,8 +144,7 @@ int stack_push(stack *st, Node *current, Node *next) {
 		return -1;
 
 	if ((err = pthread_rwlock_wrlock(&st->s_lock)) != 0) {
-		if (!(st->mysearch->options_flags & NO_ERR_MSG))
-			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
+		fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
 		return err;
 	}
 
@@ -154,10 +162,7 @@ int stack_push(stack *st, Node *current, Node *next) {
 	}
 
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
-		if (!(st->mysearch->options_flags & NO_ERR_MSG))
-		{
-			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
-		}
+		fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 		return err;
 	}
 	return 0;
@@ -171,8 +176,7 @@ int stack_job_done(stack *st, Node *current) {
 	Node *temp, *tofree;
 	temp=current;
 	if ((err = pthread_rwlock_wrlock(&st->s_lock)) != 0) {
-		if (!(st->mysearch->options_flags & NO_ERR_MSG))
-			fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
+		fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
 		return err;
 	}
 	// decrement the leaf counter
@@ -202,8 +206,7 @@ int stack_job_done(stack *st, Node *current) {
 	}
 
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
-		if (!(st->mysearch->options_flags & NO_ERR_MSG))
-			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
+		fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 		return err;
 	}
 	if (temp==NULL)
@@ -233,8 +236,7 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 	search *mysearch;
 	mysearch=st->mysearch;
 	if ((err = pthread_rwlock_rdlock(&st->s_lock)) != 0) {
-		if (!(mysearch->options_flags & NO_ERR_MSG))
-			fprintf(stderr, "rwlock_rdlock: %s\n", strerror(err));
+		fprintf(stderr, "rwlock_rdlock: %s\n", strerror(err));
 		return NULL;
 	}
 
@@ -244,13 +246,18 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 			break;
 	}
 
-	if (temp != NULL && !(mysearch->options_flags & NO_ERR_MSG)) {
+	if (temp != NULL ) {
 		{
-			fprintf(stderr, "%d depth: %s detect a loop\n", current->depth + 1,
+			if (!(mysearch->options_flags & NO_ERR_MSG))
+			{
+				fprintf(stderr, "%d depth: %s detect a loop\n", current->depth + 1,
 					fullpath);
-			if (mysearch->client_fd>0)
-				send_err_line(mysearch,"%d depth: %s detect a loop",current->depth + 1,
-						fullpath);
+				if (mysearch->client_fd>0)
+					send_err_line(mysearch,"%d depth: %s detect a loop",current->depth + 1,
+							fullpath);
+			}
+			else
+				(current->statistics).err_quiet++;
 			/* update the avoided loop directory */
 			(current->statistics).loop_avoided++;
 		}
@@ -259,17 +266,22 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 		 * in the history stack
 		 */
 		for (iter = current; iter != temp->prev; iter = iter->prev) {
-			fprintf(stderr, "%*c%d depth: %s\n", 3 * iter->depth, ' ',
-					iter->depth, iter->path);
-			if (mysearch->client_fd>0)
-				send_err_line(mysearch,"%*c%d depth: %s", 3 * iter->depth, ' ',
+			if (!(mysearch->options_flags & NO_ERR_MSG))
+			{
+				fprintf(stderr, "%*c%d depth: %s\n", 3 * iter->depth, ' ',
 						iter->depth, iter->path);
-			fflush(stderr);
+				if (mysearch->client_fd>0)
+					send_err_line(mysearch,"%*c%d depth: %s", 3 * iter->depth, ' ',
+						iter->depth, iter->path);
+				fflush(stderr);
+			} else
+			{
+				(current->statistics).err_quiet++;
+			}
 		}
 	}
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
-		if (!(st->mysearch->options_flags & NO_ERR_MSG))
-			fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
+		fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
 		return NULL;
 	}
 	return temp;
@@ -309,7 +321,7 @@ char* get_fullpath(char* rpath, char *fname,int flag) {
  * if it is, return bool 1
  * else false 0,failure -1
  */
-int is_sym_dir(char* full_name,search *mysearch,int flag) {
+int is_sym_dir(char* full_name,search *mysearch,Node *current) {
 	struct stat st;
 	int val;
 	errno = 0;
@@ -318,10 +330,13 @@ int is_sym_dir(char* full_name,search *mysearch,int flag) {
 	 */
 	if (stat(full_name, &st) == -1) {
 		/* if the link does not exist, issue error*/
-		if (flag!=0) {
+		if (!(mysearch->options_flags & NO_ERR_MSG)) {
 			perror(full_name);
 			if (mysearch->client_fd>0)
 				send_err_line(mysearch,"%s:%s",full_name,strerror(errno));
+		} else
+		{
+			(current->statistics).err_quiet++;
 		}
 		val = -1;
 	} else if (S_ISDIR(st.st_mode))
@@ -378,6 +393,10 @@ int walk_recur(Node* current) {
 					if (mysearch->client_fd>0)
 						send_err_line(mysearch,"%s: %s","readdir_r",strerror(errno));
 				}
+			else
+			{
+				(current->statistics).err_quiet++;
+			}
 			break;
 		}
 		if (result == NULL) /* just hit EOF */
@@ -415,6 +434,9 @@ int walk_recur(Node* current) {
 				perror(full_path);
 				if (mysearch->client_fd>0)
 					send_err_line(mysearch,"%s: %s",full_path,strerror(errno));
+			} else
+			{
+				(current->statistics).err_quiet++;
 			}
 
 			free(full_path);
@@ -430,6 +452,11 @@ int walk_recur(Node* current) {
 					if (mysearch->client_fd>0)
 						send_err_line(mysearch,"Symlink: %s", full_path);
 				}
+				else
+				{
+					(current->statistics).err_quiet++;
+				}
+
 				(current->statistics).link_ignored++;
 				free(full_path);
 				continue;
@@ -437,7 +464,7 @@ int walk_recur(Node* current) {
 			/* use stat to follow the symlink to test whether the symlink to
 			 * dir or file exist
 			 */
-			sym_link_flag = is_sym_dir(full_path,mysearch,!(options_flags & NO_ERR_MSG));
+			sym_link_flag = is_sym_dir(full_path,mysearch,current);
 			/* if it does not exist, just go to process next one */
 			if (sym_link_flag == -1) {
 				free(full_path);
@@ -460,6 +487,9 @@ int walk_recur(Node* current) {
 						send_err_line(mysearch,"%s is detected to exceed the search limit %d",
 								full_path, stk->mysearch->max_dir_depth);
 
+				}else
+				{
+					(current->statistics).err_quiet++;
 				}
 				free(full_path);
 				continue;
@@ -560,7 +590,7 @@ int walk_to_next(Node* next) {
 	/* if -t is not defined, create a thread if possible */
 	if (thread_limits < 0) {
 		err = pthread_create(&id, &next->stk->attr, search_dir, (void*) next);
-		if (err != 0 && !(options_flags & NO_ERR_MSG))
+		if (err != 0 )
 			perror("Pthread");
 		else if (err==0)
 		{
@@ -577,7 +607,7 @@ int walk_to_next(Node* next) {
 		if (mysearch->alive_threads < thread_limits) {
 			err = pthread_create(&id, &next->stk->attr, search_dir,
 					(void*) next);
-			if (err != 0 && !(options_flags & NO_ERR_MSG)) {
+			if (err != 0) {
 				perror("Pthread");
 			}
 		}

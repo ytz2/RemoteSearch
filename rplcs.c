@@ -22,6 +22,7 @@
 #include "plcsIO.h"
 #include "search_given.h"
 #include "global.h"
+#include "print_time.h"
 
 pthread_key_t line_buffer_key;
 pthread_key_t out_buffer_key;
@@ -50,6 +51,8 @@ int main(int argc, char *argv[]) {
 	pthread_t id;
 	int err;
 	char *temp;
+	time_type t_start,t_end;
+	double tdiff;
 	/*initialization*/
 	err=0;
 	mysearch=NULL;
@@ -68,7 +71,7 @@ int main(int argc, char *argv[]) {
 		search_stream(stdin, NULL, mysearch,NULL);
 		return 0;
 	}
-
+	get_time(&t_start);
 	/* process the list of files*/
 	for (; optind < argc; optind++) {
 		/* if it a remote search */
@@ -111,7 +114,9 @@ int main(int argc, char *argv[]) {
 	{
 		pthread_cond_wait(&(mysearch->ready),&(mysearch->lock));
 	}
-	print_stat(&(mysearch->statistics));
+	get_time(&t_end);
+	tdiff=time_diff(&t_start,&t_end);
+	print_stat(&(mysearch->statistics),tdiff);
 	destroy_search(mysearch);
 
 	return 0;

@@ -77,7 +77,7 @@ int walk_recur(Node* current);
  * if it is, return bool 1
  * else false 0
  */
-int is_sym_dir(char* full_name,search *mysearch,int flag);
+int is_sym_dir(char* full_name,search *mysearch,Node *current);
 
 /*
  * wrapper function for directory search
