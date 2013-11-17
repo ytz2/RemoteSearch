@@ -74,7 +74,6 @@ client(remote *rmt,search *mysearch)
 	}
 	printf("client1tcp connected to server at IP address %s port %d\n",
 		text_buf, ntohs(iptr->sin_port));
-
 	/* send the first message */
 
 	if (our_send_message(fd, OPTION_PARAMETER,sizeof(msg_one),&msg1) != 0)
@@ -122,6 +121,7 @@ client(remote *rmt,search *mysearch)
 		else if (type==STATISTICS_MSG)
 		{
 			temp=(Statistics *)out_buffer;
+			trans_stat2recv(temp); /* avoid little/big endian issues*/
 			pthread_mutex_lock(&(mysearch->lock));
 			update_statistics_sock(&(mysearch->statistics), temp);
 			pthread_mutex_unlock(&(mysearch->lock));
@@ -132,7 +132,6 @@ client(remote *rmt,search *mysearch)
 		fflush(stderr);
 		fflush(stdout);
 	}
-
 
 	pthread_cleanup_pop(1);
 	/* close the connection to the server */

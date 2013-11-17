@@ -59,10 +59,9 @@ char* path_alloc(size_t *sizep) {
 char* get_realpath(char* filename, char **memptr, Node *current) {
 
 	char *realptr;
-	realptr = NULL;
 	search * mysearch;
 	mysearch=NULL;
-
+	realptr = NULL;
 	if (current)
 		mysearch=current->stk->mysearch;
 

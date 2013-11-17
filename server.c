@@ -77,6 +77,8 @@ server_agent(void *params)
 	double tdiff;
 	msg_one msg1;
 	search *mysearch;
+	Statistics statistic;
+	memset(&statistic,0,sizeof(Statistics));
 	errcode = pthread_detach(pthread_self());
 	if (errcode != 0) {
 		fprintf(stderr, "pthread_detach server agent: %s\n",
@@ -94,7 +96,6 @@ server_agent(void *params)
 	}
 	fprintf(stderr,"server plcsd connected to client at IP address %s "
 		"port %d\n", text_buf, ntohs(iptr->sin_port));
-
 	get_time(&t_start);
 	len=sizeof(msg_one);
 	/* first message should be the file name */
@@ -147,7 +148,10 @@ server_agent(void *params)
 	}
 
 	len=sizeof(Statistics);
-	if (our_send_message(mysearch->client_fd, STATISTICS_MSG,len,&mysearch->statistics) != 0)
+	/* make a copy of little/big endian adapted statistical structure*/
+	update_statistics_sock(&statistic, &mysearch->statistics);
+	trans_stat2send(&statistic);
+	if (our_send_message(mysearch->client_fd, STATISTICS_MSG,len,&statistic) != 0)
 	{
 		fprintf(stderr,"Fail to send statistics\n");
 		return NULL;
@@ -163,7 +167,7 @@ server_agent(void *params)
 	free(params);
 	return NULL;
 }	/* server_agent */
-
+
 void listener(char *server_port, char *interface_name)
 {
 	socklen_t		len;

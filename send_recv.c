@@ -31,7 +31,7 @@ our_send_message(int fd, enum header_types type, unsigned int length,
 	}
 	return 0;
 }	/* our_send_message */
-
+
 /* reads a fixed-size header followed by variable length data
  *
  * fills in type, length and info with values from the header

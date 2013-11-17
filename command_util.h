@@ -19,6 +19,7 @@
 #include <pthread.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <arpa/inet.h>
 /* predefine parameters to work with getopt interface*/
 
 #define OPTIONS ":hbeipvafql:m:n:d:t:"
@@ -187,6 +188,13 @@ remote* scan_remote_search(char *input);
 /*print the statistics*/
 void print_stat(Statistics *statistics,double tdiff);
 
+/*update the statistics within dir */
 void update_statistics(Statistics *root, Statistics *node);
+/*update all the statistics*/
 void update_statistics_sock(Statistics *root, Statistics *node);
+/*convert to network endian for sending*/
+void trans_stat2send(Statistics *st);
+/*convert from network endian to achitecture endian*/
+void trans_stat2recv(Statistics *st);
+
 #endif /* COMMAND_UTIL_H_ */

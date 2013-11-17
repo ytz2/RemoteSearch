@@ -311,6 +311,7 @@ void print_stat(Statistics *statistics,double tdiff)
 	char *info;
 	char line_buff[RIGHT_JUST*2];
 	double rate;
+	memset(buffer,0,RIGHT_JUST*2*17);
 	rate=0.;
 	fflush(stdout);
 	sprintf(line_buff,"%*s   %s\n",RIGHT_JUST,"label","statistics");
@@ -393,4 +394,39 @@ void update_statistics_sock(Statistics *root, Statistics *node)
 	root->thread_created+=node->thread_created;
 	root->thread_not_created+=node->thread_not_created;
 	root->max_alive=MAX(root->max_alive,node->max_alive);
+}
+void trans_stat2send(Statistics *st)
+{
+	st->link_ignored=htonl(st->link_ignored);
+	st->dir_opened=htonl(st->dir_opened);
+	st->loop_avoided=htonl(st->loop_avoided);
+	st->dir_pruned=htonl(st->dir_pruned);
+	st->max_depth=htonl(st->max_depth);
+	st->dot_caught=htonl(st->dot_caught);
+	st->err_quiet=htonl(st->err_quiet);
+	st->lines_matched=htonl(st->lines_matched);
+	st->lines_read=htonl(st->lines_read);
+	st->file_read=htonl(st->file_read);
+	st->bytes_read=htonl(st->bytes_read);
+	st->thread_created=htonl(st->thread_created);
+	st->thread_not_created=htonl(st->thread_not_created);
+	st->max_alive=htonl(st->max_alive);
+}
+
+void trans_stat2recv(Statistics *st)
+{
+	st->link_ignored=ntohl(st->link_ignored);
+	st->dir_opened=ntohl(st->dir_opened);
+	st->loop_avoided=ntohl(st->loop_avoided);
+	st->dir_pruned=ntohl(st->dir_pruned);
+	st->max_depth=ntohl(st->max_depth);
+	st->dot_caught=ntohl(st->dot_caught);
+	st->err_quiet=ntohl(st->err_quiet);
+	st->lines_matched=ntohl(st->lines_matched);
+	st->lines_read=ntohl(st->lines_read);
+	st->file_read=ntohl(st->file_read);
+	st->bytes_read=ntohl(st->bytes_read);
+	st->thread_created=ntohl(st->thread_created);
+	st->thread_not_created=ntohl(st->thread_not_created);
+	st->max_alive=ntohl(st->max_alive);
 }

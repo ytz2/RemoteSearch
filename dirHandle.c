@@ -536,7 +536,6 @@ int walk_recur(Node* current) {
  */
 void* search_dir(void *para) {
 	long err;
-	int thread_limits;
 	Node *next;
 	search *mysearch;
 	/*
@@ -546,7 +545,6 @@ void* search_dir(void *para) {
 	err= 0;
 	next=(Node*)para;
 	mysearch=next->stk->mysearch;
-	thread_limits=mysearch->thread_limits;
 
 	pthread_mutex_lock(&(mysearch->lock));
 	/* update the descend thread created directly */
@@ -576,12 +574,10 @@ void* search_dir(void *para) {
 int walk_to_next(Node* next) {
 	pthread_t id; // thread id
 	int err,thread_limits;
-	unsigned int options_flags;
 	search *mysearch;
 	err = 1;
 	mysearch=next->stk->mysearch;
 	thread_limits=mysearch->thread_limits;
-	options_flags=mysearch->options_flags;
 	/*if the thread number limit is 0, use main thread*/
 	if (thread_limits == 0) {
 		return walk_recur(next);

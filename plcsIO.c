@@ -65,6 +65,7 @@ void send_err_line(search *mysearch,char *format,...)
 {
 	char *err_buffer;
 	unsigned int len;
+	va_list argptr;
 	pthread_once(&init_done, thread_init);
 	err_buffer = pthread_getspecific(err_buffer_key);
 	/* allocate memory to buffer*/
@@ -72,7 +73,6 @@ void send_err_line(search *mysearch,char *format,...)
 		err_buffer = (char*) malloc(MAX_TCP_ERR);
 		pthread_setspecific(err_buffer_key, err_buffer);
 	}
-	va_list argptr;
 	va_start(argptr, format);
 	vsprintf(err_buffer, format, argptr);
 	va_end(argptr);

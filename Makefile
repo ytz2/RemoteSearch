@@ -43,7 +43,7 @@ rplcsd: server.o rplcsd.o tcpblockio.o no_sigpipe.o \
 		search_given.o thread_share.o print_time.o
 	$(CC) $(CFLAGS) $(LDFLAGS) server.o rplcsd.o tcpblockio.o \
 	no_sigpipe.o command_util.o send_recv.o plcsIO.o str_search.o \
-	rpath.o dirhandle.o search_given.o thread_share.o print_time.o -o rplcsd 
+	rpath.o dirHandle.o search_given.o thread_share.o print_time.o -o rplcsd 
 
 dirHandle.o:  ospenv.h rpath.h dirHandle.h thread_share.h
 	$(CC) $(CFLAGS)  -c dirHandle.c
