@@ -10,7 +10,7 @@
 
 #include "command_util.h"
 
-/* Scans the string pointed to by optarg and tries to convert it to a number.
+/* Scans the string pointed to by optarg and tries to convert it to an int number.
  * Returns 0 if successful (and stores the number in result),
  *	  -1 on any error (prints an error message and leaves result unchanged)
  */
@@ -32,6 +32,7 @@ int scan_switch_number(int switch_char, int *result) {
 	}
 	return retval;
 } /* scan_switch_number */
+
 
 void print_flag(unsigned int flags, unsigned int this_one, char *name) {
 	fprintf(stderr,"0x%02x \t%s \n", (flags & this_one) ? this_one : 0,name);
@@ -104,7 +105,7 @@ void scan_opt_search(int argc,char *argv[],search *mysearch)
 		switch (c) {
 		case 'h': /* print help info */
 			printf(
-					"Usage: plcs [options] search_string [list of input file/directory/remote names]\n");
+					"Usage: rplcs [options] search_string [list of input file/directory/remote names]\n");
 			printf(
 					"Search search_string in Provided File,Directory or Standard input\n");
 			printf("Example: ./plcs hello main.c\n");

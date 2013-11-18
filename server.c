@@ -207,6 +207,7 @@ void listener(char *server_port, char *interface_name)
 			perror("rplcsd accept");
 			break;
 		}
+
 		/* we are now successfully connected to a remote client */
 		errcode = pthread_create(&agent_id, NULL, server_agent, params);
 		if (errcode != 0) {
