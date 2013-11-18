@@ -1,4 +1,6 @@
-/* print_time.h - header file for
+/*
+ * Yanhua Liu (ytz2) CS820
+ *  print_time.h - header file for
  *		  program to print out time differences in microseconds
  */
 

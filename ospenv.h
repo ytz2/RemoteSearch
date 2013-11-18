@@ -1,7 +1,8 @@
 /*
+ * Yanhua Liu (ytz2) CS820
  * ospenv.h
  *
- *  Created by Yanhua Liu for CS820 assignment 1
+ *  Created by Yanhua Liu for CS820 assignment 3
  *  Created on: Sep 5, 2013
  *  This header file defines the standard enviroment
  */

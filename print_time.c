@@ -1,16 +1,14 @@
-/* print_time.c - function to print out time differences in microseconds */
+/*
+ * Yanhua Liu (ytz2) CS820
+ *print_time.c - function to get time differences in microseconds */
 
 #include "print_time.h"
 
-
-/* prints the elapsed time between "start" and "done"
- * when called, start is the starting time (or NULL to start at time 0),
- *		done is the finishing time
- *		message is extra text to print after the time (or NULL)
+/*
+ * get the time difference in microsends precision
+ *
  */
-double
-time_diff( time_type *start, time_type *done )
-{
+double time_diff(time_type *start, time_type *done) {
 	int secs, fraction;
 	double delta;
 
@@ -24,7 +22,7 @@ time_diff( time_type *start, time_type *done )
 			fraction += PER_SECOND;
 		}
 	}
-	delta = ((double)secs) + ((double)fraction)/((double)PER_SECOND);
+	delta = ((double) secs) + ((double) fraction) / ((double) PER_SECOND);
 	return delta;
 }
 

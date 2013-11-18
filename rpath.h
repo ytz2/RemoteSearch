@@ -1,5 +1,5 @@
 /* Yanhua Liu
- * For CS820 Assignment 2
+ * For CS820 Assignment 3
  * rpath.h
  *
  *  Created on: Oct 18, 2013

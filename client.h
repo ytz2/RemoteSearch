@@ -1,4 +1,8 @@
-/* client.h - header for client.c */
+/* client.h - header for client.c
+ * This header defines the client on
+ * rplcs operations on remote searching
+ * Yanhua Liu (ytz2) CS820
+ * */
 
 #ifndef _CLIENT_H
 #define _CLIENT_H

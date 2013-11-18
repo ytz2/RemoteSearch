@@ -1,4 +1,7 @@
-/* server.h - header for server.c */
+/*
+ * Yanhua Liu (ytz2) CS820
+ *  server.h - header for server.c
+ */
 
 #ifndef _SERVER_H
 #define _SERVER_H

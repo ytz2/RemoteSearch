@@ -1,4 +1,5 @@
 /*
+ * Yanhua Liu (ytz2) CS820
  * general_search.h
  *
  *  Created on: Nov 11, 2013

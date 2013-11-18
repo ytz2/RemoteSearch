@@ -1,7 +1,11 @@
 /*
+ * This header file defines helper types
+ * in network communication, dir handling
+ * and function calling parameters.
+ * Utility functions are listed as below
  * command_util.h
- *
- *  Created by Yanhua Liu for CS820 assignment 1
+ *Yanhua Liu (ytz2) CS820
+ *  Created by Yanhua Liu for CS820 assignment 3
  *  Created on: Sep 5, 2013
  *  This header file provide the utilities to
  *  implement the getopt interface
@@ -58,9 +62,7 @@
 
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
 
-
-
-typedef struct Message_Six{
+typedef struct Message_Six {
 	unsigned int link_ignored; /*total link ignored*/
 	unsigned int dir_opened; /*total dir opened*/
 	unsigned int loop_avoided; /* total loop avoided */
@@ -77,12 +79,10 @@ typedef struct Message_Six{
 	unsigned int bytes_read;
 } Statistics;
 
-
-
 /*wrap the command parameters to a structure to faciliate
  * the assignment 3
  */
-typedef struct Search_info{
+typedef struct Search_info {
 	unsigned int options_flags; /* work with switch options_flags*/
 	int *shift_table; /* shift table*/
 	int line_buffer_size; /* work with -l number*/
@@ -100,20 +100,18 @@ typedef struct Search_info{
 	pthread_mutex_t lock;
 } search;
 
-
-typedef struct Remote{
-	char node[HOSTMAX+1];
-	char port[PORT_MAX+1];
-	char name[REMOTE_NAME_MAX+1];
+typedef struct Remote {
+	char node[HOSTMAX + 1];
+	char port[PORT_MAX + 1];
+	char name[REMOTE_NAME_MAX + 1];
 } remote; /* node:port/name */
 
-
-typedef struct Client_parameters{
+typedef struct Client_parameters {
 	remote* rmt;
 	search* mysearch;
 } Client_para;
 
-typedef struct Message_one{
+typedef struct Message_one {
 	unsigned int options_flags; /* work with switch options_flags*/
 	int line_buffer_size; /* work with -l number*/
 	int max_line_number; /* work with -m number*/
@@ -154,9 +152,6 @@ struct STACK {
 	search *mysearch;
 };
 
-
-
-
 /* Function Utilities*/
 
 /* Scans the string pointed to by optarg and tries to convert it to a number.
@@ -180,13 +175,13 @@ void init_search(search **mysearch);
 /*destroy the search*/
 void destroy_search(search *mysearch);
 /* wrapper of getopt function */
-void scan_opt_search(int argc,char *argv[],search *mysearch);
+void scan_opt_search(int argc, char *argv[], search *mysearch);
 
 /* check if the list of file contain the : to indicate a remote search */
-remote* scan_remote_search(char *input,int *flag);
+remote* scan_remote_search(char *input, int *flag);
 
 /*print the statistics*/
-void print_stat(FILE* fptr,Statistics *statistics,double tdiff);
+void print_stat(FILE* fptr, Statistics *statistics, double tdiff);
 
 /*update the statistics within dir */
 void update_statistics(Statistics *root, Statistics *node);

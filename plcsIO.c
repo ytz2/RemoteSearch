@@ -1,4 +1,5 @@
 /*
+ * Yanhua Liu (ytz2) CS820
  * plcsIO.c
  *
  *  Created by Yanhua Liu for CS820 assignment 1
@@ -24,13 +25,12 @@
  * defined in homework. -b -e -i and -v are handled
  */
 
-
 int search_str(char* buffer, search *mysearch) {
 	int result, insensitive;
 	unsigned int options_flags;
 	char *search_str;
-	options_flags=mysearch->options_flags;
-	search_str=mysearch->search_pattern;
+	options_flags = mysearch->options_flags;
+	search_str = mysearch->search_pattern;
 	result = 0;
 	insensitive = 0;
 
@@ -52,20 +52,20 @@ int search_str(char* buffer, search *mysearch) {
 		result = exact_match(buffer, search_str, insensitive);
 	/* else return the normal search */
 	else
-		result = boyer_moore(buffer, search_str, mysearch->shift_table, insensitive);
+		result = boyer_moore(buffer, search_str, mysearch->shift_table,
+				insensitive);
 
 	return (options_flags & INVERSE_PRINT ? (!result) : result);
 }/*search_str*/
 
-
 /*
  * send the stderr msg to client side
  */
-void send_err_line(search *mysearch,char *format,...)
-{
+void send_err_line(search *mysearch, char *format, ...) {
 	char *err_buffer;
 	unsigned int len;
 	va_list argptr;
+	/*create the buffer*/
 	pthread_once(&init_done, thread_init);
 	err_buffer = pthread_getspecific(err_buffer_key);
 	/* allocate memory to buffer*/
@@ -74,32 +74,38 @@ void send_err_line(search *mysearch,char *format,...)
 		pthread_setspecific(err_buffer_key, err_buffer);
 	}
 	va_start(argptr, format);
+	/*product the string according format*/
 	vsprintf(err_buffer, format, argptr);
 	va_end(argptr);
-	len=strlen(err_buffer);
-	err_buffer[len]='\n';
-	err_buffer[++len]='\0';
+	len = strlen(err_buffer);
+	err_buffer[len] = '\n';
+	err_buffer[++len] = '\0';
+	/*lock to send to avoid mixture receiving at client side*/
 	pthread_mutex_lock(&(mysearch->lock));
-		/* send the fourth message */
-	if (our_send_message(mysearch->client_fd, OUTPUT_ERR,len+1,err_buffer) != 0)
-	{
-		fprintf(stderr,"Fail to send %s\n",err_buffer);
+	/* send the fourth message */
+	if (our_send_message(mysearch->client_fd, OUTPUT_ERR, len + 1, err_buffer)
+			!= 0) {
+		fprintf(stderr, "Fail to send %s\n", err_buffer);
 		pthread_mutex_unlock(&(mysearch->lock));
 		return;
 	}
 	pthread_mutex_unlock(&(mysearch->lock));
 }
 
-/* send the std_output from the server side to the client side */
-void send_print_line(int lineno, char* realpath, char* str,int column_number,search *mysearch) {
+/* send the std_output from the server side to the client side
+ * This is a sister version of print_line function but used to
+ * send searched message 4
+ * */
+void send_print_line(int lineno, char* realpath, char* str, int column_number,
+		search *mysearch) {
 
 	const char *temp1, *temp2;
 	char *out_buffer;
 	unsigned int len;
-	out_buffer=NULL;
+	out_buffer = NULL;
 	pthread_once(&init_done, thread_init);
 	out_buffer = pthread_getspecific(out_buffer_key);
-		/* allocate memory to buffer*/
+	/* allocate memory to buffer*/
 	if (out_buffer == NULL) {
 		out_buffer = (char*) malloc(MAX_TCP_STD);
 		pthread_setspecific(out_buffer_key, out_buffer);
@@ -112,19 +118,20 @@ void send_print_line(int lineno, char* realpath, char* str,int column_number,sea
 		temp2 = ": ";
 	}
 	if (column_number > 0)
-		sprintf(out_buffer,"%s%s%*d: %s", temp1, temp2, column_number, lineno, str);
+		sprintf(out_buffer,
+				"%s%s%*d: %s", temp1, temp2, column_number, lineno, str);
 	else
-		sprintf(out_buffer,"%s%s%s",temp1, temp2, str);
+		sprintf(out_buffer, "%s%s%s", temp1, temp2, str);
 
-	len=strlen(out_buffer);
-	out_buffer[len]='\n';
-	out_buffer[++len]='\0';
+	len = strlen(out_buffer);
+	out_buffer[len] = '\n';
+	out_buffer[++len] = '\0';
 	/* the interface provided by tcpio is not atomic, add a lock */
 	pthread_mutex_lock(&(mysearch->lock));
 	/* send the fourth message */
-	if (our_send_message(mysearch->client_fd, OUTPUT_STD,len+1,out_buffer) != 0)
-	{
-		fprintf(stderr,"Fail to send %s\n",out_buffer);
+	if (our_send_message(mysearch->client_fd, OUTPUT_STD, len + 1, out_buffer)
+			!= 0) {
+		fprintf(stderr, "Fail to send %s\n", out_buffer);
 		pthread_mutex_unlock(&(mysearch->lock));
 		return;
 	}
@@ -137,7 +144,7 @@ void send_print_line(int lineno, char* realpath, char* str,int column_number,sea
  * will write realpath: lineno: str or if realpath is NULL
  * write: lineno: str
  */
-void print_line(int lineno, char* realpath, char* str,int column_number) {
+void print_line(int lineno, char* realpath, char* str, int column_number) {
 	const char *temp1, *temp2;
 	if (realpath == NULL) {
 		temp1 = "";
@@ -164,14 +171,14 @@ void search_stream(FILE *fptr, char* filename, search *mysearch, Node* current) 
 	int lineno;
 	int output_lineno;
 	char* rptr, *memptr, *any_line_buffer;
-	unsigned int bytes, lines_read,lines_matched;
+	unsigned int bytes, lines_read, lines_matched;
 	/*initialize the rptr*/
 	rptr = NULL;
 	memptr = NULL;
 	output_lineno = 1;
-	bytes=0;
-	lines_read=0;
-	lines_matched=0;
+	bytes = 0;
+	lines_read = 0;
+	lines_matched = 0;
 	pthread_once(&init_done, thread_init);
 	any_line_buffer = pthread_getspecific(line_buffer_key);
 	/* allocate memory to buffer*/
@@ -185,15 +192,15 @@ void search_stream(FILE *fptr, char* filename, search *mysearch, Node* current) 
 	 * get the realpath for printing purpose
 	 */
 	if ((fptr != stdin) && (mysearch->options_flags & SHOW_PATH))
-		rptr = get_realpath(filename, &memptr,current);
+		rptr = get_realpath(filename, &memptr, current);
 
-	/*process each line in the input*/
-	errno = 0;
+	/*process each line in the input*/errno = 0;
 	for (lineno = 1;
 			!feof(fptr)
-					&& fgets(any_line_buffer, mysearch->line_buffer_size + 1, fptr)
-							!= NULL; lineno++) {
-		if (mysearch->max_line_number >= 0 && output_lineno > mysearch->max_line_number)
+					&& fgets(any_line_buffer, mysearch->line_buffer_size + 1,
+							fptr) != NULL; lineno++) {
+		if (mysearch->max_line_number >= 0
+				&& output_lineno > mysearch->max_line_number)
 			break;
 		if (errno != 0 || ferror(fptr)) {
 			/*error check*/
@@ -205,41 +212,38 @@ void search_stream(FILE *fptr, char* filename, search *mysearch, Node* current) 
 			break;
 		}
 		lines_read++;
-		bytes+=strlen(any_line_buffer);
+		bytes += strlen(any_line_buffer);
 		trim_line(any_line_buffer);
 		/*if get the match, print the line*/
 		if (search_str(any_line_buffer, mysearch)) {
 			/*if it is on the server side*/
-			if (mysearch->client_fd>0)
-			{
-				send_print_line(lineno, rptr, any_line_buffer,mysearch->column_number,mysearch);
-			}
-			else /* on the client side */
-				print_line(lineno, rptr, any_line_buffer,mysearch->column_number);
+			if (mysearch->client_fd > 0) {
+				send_print_line(lineno, rptr, any_line_buffer,
+						mysearch->column_number, mysearch);
+			} else
+				/* on the client side */
+				print_line(lineno, rptr, any_line_buffer,
+						mysearch->column_number);
 			output_lineno++;
 			lines_matched++;
 		}
 	}
 	/* if it is a file under dir */
-	if (current)
-	{
-		(current->statistics).lines_matched+=lines_matched;
-		(current->statistics).bytes_read+=bytes;
-		(current->statistics).lines_read+=lines_read;
+	if (current) {
+		(current->statistics).lines_matched += lines_matched;
+		(current->statistics).bytes_read += bytes;
+		(current->statistics).lines_read += lines_read;
 		(current->statistics).file_read++;
-	}
-	else
-	{
+	} else {
 		pthread_mutex_lock(&(mysearch->lock));
 		/* if it is level 0 do it here */
-		(mysearch->statistics).lines_read+=lines_read;
+		(mysearch->statistics).lines_read += lines_read;
 		(mysearch->statistics).file_read++;
 
 		/* if it is a level 0 file, update the corresponding field */
-		if (fptr!=stdin)
-		{
-			(mysearch->statistics).lines_matched+=lines_matched;
-			(mysearch->statistics).bytes_read+=bytes;
+		if (fptr != stdin) {
+			(mysearch->statistics).lines_matched += lines_matched;
+			(mysearch->statistics).bytes_read += bytes;
 		}
 		/*if it is level 0 file */
 		pthread_mutex_unlock(&(mysearch->lock));
@@ -261,18 +265,16 @@ void search_file(char* filename, search *mysearch, Node *current) {
 	FILE *fptr;
 	if ((fptr = fopen(filename, "r")) == NULL) {
 		/* if it is under level 0 or under dir but set not quiet, issue error */
-		if (current==NULL || (current!=NULL && !(mysearch->options_flags & NO_ERR_MSG)))
-			{
-				perror(filename);
-				if (mysearch->client_fd>0)
-					send_err_line(mysearch,"%s: %s",filename,strerror(errno));
-			}
-			else
-			{
-				(current->statistics).err_quiet++;
-			}
+		if (current == NULL
+				|| (current != NULL && !(mysearch->options_flags & NO_ERR_MSG))) {
+			perror(filename);
+			if (mysearch->client_fd > 0)
+				send_err_line(mysearch, "%s: %s", filename, strerror(errno));
+		} else {
+			(current->statistics).err_quiet++;
+		}
 	} else {
-		search_stream(fptr, filename, mysearch,current);
+		search_stream(fptr, filename, mysearch, current);
 		fclose(fptr);
 	}
 
@@ -281,16 +283,15 @@ void search_file(char* filename, search *mysearch, Node *current) {
 /*
  * wrapper function build the shift talbe
  */
-void build_shifttable(search *mysearch)
-{
+void build_shifttable(search *mysearch) {
 	/*if both -b and -e are not switched on, build the shit table*/
 	/*for BM algorithm to implement*/
-	if ((mysearch->shift_table=(int*)malloc(MAX_ASCII*sizeof(int)))==NULL)
-	{
+	if ((mysearch->shift_table = (int*) malloc(MAX_ASCII * sizeof(int))) == NULL) {
 		perror("malloc: ");
 		exit(1);
 	}
-	if (!(mysearch->options_flags & AT_BEGIN) && !(mysearch->options_flags & AT_END)
+	if (!(mysearch->options_flags & AT_BEGIN)
+			&& !(mysearch->options_flags & AT_END)
 			&& strlen(mysearch->search_pattern))
 		build_shift_table(mysearch->shift_table, mysearch->search_pattern,
 				(mysearch->options_flags & CASE_INSENSITIVE));

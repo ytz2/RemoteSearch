@@ -1,4 +1,5 @@
 /*
+ * Yanhua Liu (ytz2) CS820
  * dirHandle.h
  * For CS820 Assignment 2
  * Created on: Oct 17, 2013
@@ -65,7 +66,7 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath);
 /*
  * get the full path from the realpath and d_name
  */
-char* get_fullpath(char* rpath, char *fname,int flag);
+char* get_fullpath(char* rpath, char *fname, int flag);
 
 /*
  * Walk through a dir from the current node
@@ -77,7 +78,7 @@ int walk_recur(Node* current);
  * if it is, return bool 1
  * else false 0
  */
-int is_sym_dir(char* full_name,search *mysearch,Node *current);
+int is_sym_dir(char* full_name, search *mysearch, Node *current);
 
 /*
  * wrapper function for directory search

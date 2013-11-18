@@ -1,4 +1,6 @@
-/* servermain.c	- a server main program running under unix
+/*
+ * Yanhua Liu (ytz2) CS820
+ * rplcsd.c	- a server main program running under unix
  *		  that uses the socket interface to tcp or udp
  *
  * there are two optional command line parameters:

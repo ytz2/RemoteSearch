@@ -1,4 +1,5 @@
 /*
+ * Yanhua Liu (ytz2) CS820
  * global.h
  *
  *  Created on: Nov 11, 2013

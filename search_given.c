@@ -1,19 +1,17 @@
 /*
+ * Yanhua Liu (ytz2) CS820
  * general_search.c
  *
  *  Created on: Nov 11, 2013
  *      Author: yanhualiu
  */
 
-
 /*
  * a more general search to search a given name from level 0
  */
 #include "search_given.h"
 
-
-void search_given(char *given, search *mysearch)
-{
+void search_given(char *given, search *mysearch) {
 	struct stat info;
 	stack *temp_stk; /*a temp var to work with history stack */
 	Node *temp_node; /* a temp var to work with hsitory stack node */
@@ -22,8 +20,8 @@ void search_given(char *given, search *mysearch)
 	/*get the file info */
 	if (stat(given, &info) == -1) {
 		perror(given);
-		if(mysearch->client_fd>0)
-			send_err_line(mysearch,"%s: %s",given,strerror(errno));
+		if (mysearch->client_fd > 0)
+			send_err_line(mysearch, "%s: %s", given, strerror(errno));
 		return;
 	}
 	/* if it directory */
@@ -33,17 +31,15 @@ void search_given(char *given, search *mysearch)
 		 */
 		if (mysearch->max_dir_depth == 0) {
 			/*if -q is set */
-			if (!(mysearch->options_flags & NO_ERR_MSG))
-				{
-					fprintf(stderr,
-						"%s is detected to exceed the search limit %d\n",
-						given, mysearch->max_dir_depth);
-					if(mysearch->client_fd>0)
-						send_err_line(mysearch,"%s is detected to exceed the search limit %d",
-								given, mysearch->max_dir_depth);
-				}
-			else
-			{
+			if (!(mysearch->options_flags & NO_ERR_MSG)) {
+				fprintf(stderr,
+						"%s is detected to exceed the search limit %d\n", given,
+						mysearch->max_dir_depth);
+				if (mysearch->client_fd > 0)
+					send_err_line(mysearch,
+							"%s is detected to exceed the search limit %d",
+							given, mysearch->max_dir_depth);
+			} else {
 				/* update the search statistics */
 				pthread_mutex_lock(&(mysearch->lock));
 				(mysearch->statistics).err_quiet++;
@@ -57,7 +53,7 @@ void search_given(char *given, search *mysearch)
 				return;
 			} else {
 				/* initialize the stack and push it on stacks*/
-				temp_stk->mysearch=mysearch;
+				temp_stk->mysearch = mysearch;
 				stack_init(temp_stk);
 				/* make a node */
 				if ((temp_node = make_node(given, 1, temp_stk)) == NULL) {
@@ -69,9 +65,8 @@ void search_given(char *given, search *mysearch)
 			}
 		}
 		return;
-	}
-	else{
-		search_file(given,mysearch, NULL);
-	}
+	} else {
+		search_file(given, mysearch, NULL);
+	} /* search it as a file*/
 	return;
 }
