@@ -35,7 +35,7 @@ int scan_switch_number(int switch_char, int *result) {
 
 
 void print_flag(unsigned int flags, unsigned int this_one, char *name) {
-	fprintf(stderr,"0x%02x \t%s \n", (flags & this_one) ? this_one : 0,name);
+	fprintf(stderr,"%s\t0x%02x\n",name,(flags & this_one) ? this_one : 0);
 } /* print_flag */
 
 /* If buffer ends with a new-line character, remove that character.
@@ -250,33 +250,59 @@ void scan_opt_search(int argc,char *argv[],search *mysearch)
 
 
 /* check if the list of file contain the : to indicate a remote search */
-remote* scan_remote_search(char *input)
+remote* scan_remote_search(char *buffer,int *flag)
 {
+	char input[HOSTMAX+PORT_MAX+REMOTE_NAME_MAX+1];
 	int len,i,colon,slash;
 	remote *rmt;
+	colon=-1;
+	slash=-1;
+	strcpy(input,buffer);
 	len=strlen(input);
-	colon=0;
-	slash=0;
+	trim_line(input);
 	/*record the : and / position */
 	for(i=0;i<len;i++)
 	{
+		/* record the first : */
 		if(input[i]==':')
 		{
-			colon=i;
+			if (colon==-1)
+				colon=i;
 		}
+		/* record the first / */
 		if (input[i]=='/')
 		{
-			slash=i;
+			if (slash==-1)
+				slash=i;
 		}
 	}
-	if (colon==0)
+	/* if there is a : then interprete it
+	 * as a remote name, if no colon, or
+	 * remote_name has not characters, wrong
+	 */
+	/* not a remote name */
+	if (colon==-1)
+	{
+		*flag=0;
 		return NULL;
-	/* if no : or / or the / is the last char */
-	if ( slash== 0 || slash==len-1 ||
+	}
+	else
+		*flag=1; // yes, it is a remote name
+
+	if (colon==0)
+	{
+		fprintf(stderr,"%s has the wrong remote_name format\n",input);
+		return NULL;
+	}
+	/* if there is no / or the / is the last char
+	 * or there is no content between : and /
+	 * or : and / position exceed our predefined size
+	 *  */
+	if ( slash== -1 || slash==len-1 ||slash-colon==1||
 			colon>HOSTMAX || (slash-colon-1)>PORT_MAX
 			|| (len-slash)>REMOTE_NAME_MAX)
 	{
-		fprintf(stderr,"%s has the wrong format\n",input);
+		fprintf(stderr,"%s has the wrong remote_name format\n",input);
 		return NULL;
 	}
 	if ((rmt=(remote*)malloc(sizeof(remote)))==NULL)
@@ -293,7 +319,6 @@ remote* scan_remote_search(char *input)
 	for (i=slash+1;i<len;i++)
 		rmt->name[i-slash-1]=input[i];
 	rmt->name[i]='\0';
-
 	return rmt;
 }
 
@@ -306,7 +331,7 @@ void add_one_line(char* buff, char *info, unsigned int val)
 }
 
 /*print the statistics*/
-void print_stat(Statistics *statistics,double tdiff)
+void print_stat(FILE* fptr,Statistics *statistics,double tdiff)
 {
 	char buffer[RIGHT_JUST*2*17];
 	char *info;
@@ -368,8 +393,8 @@ void print_stat(Statistics *statistics,double tdiff)
 	info="Processing rate in megabytes per second";
 	sprintf(line_buff,"%*s   %.6f\n",RIGHT_JUST,info,rate);
 	strcat(buffer,line_buff);
-	printf("%s",buffer);
-	fflush(stdout);
+	fprintf(fptr,"%s",buffer);
+	fflush(fptr);
 }
 
 

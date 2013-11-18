@@ -45,7 +45,7 @@
 #ifdef HOST_NAME_MAX
 #define HOSTMAX HOST_NAME_MAX
 #else
-#define HOSTMAX 255
+#define HOSTMAX 1024
 #endif
 
 #define REMOTE_NAME_MAX 1024
@@ -183,10 +183,10 @@ void destroy_search(search *mysearch);
 void scan_opt_search(int argc,char *argv[],search *mysearch);
 
 /* check if the list of file contain the : to indicate a remote search */
-remote* scan_remote_search(char *input);
+remote* scan_remote_search(char *input,int *flag);
 
 /*print the statistics*/
-void print_stat(Statistics *statistics,double tdiff);
+void print_stat(FILE* fptr,Statistics *statistics,double tdiff);
 
 /*update the statistics within dir */
 void update_statistics(Statistics *root, Statistics *node);

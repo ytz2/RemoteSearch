@@ -49,12 +49,13 @@ int main(int argc, char *argv[]) {
 	remote *rmt;
 	Client_para *para;
 	pthread_t id;
-	int err;
+	int err,rmt_flag;
 	char *temp;
 	time_type t_start,t_end;
 	double tdiff;
 	/*initialization*/
 	err=0;
+	rmt_flag=0;
 	mysearch=NULL;
 	init_search(&mysearch);
 
@@ -76,9 +77,9 @@ int main(int argc, char *argv[]) {
 	for (; optind < argc; optind++) {
 		/* if it a remote search */
 		temp=argv[optind];
-		if ((rmt=scan_remote_search(temp))!=NULL)
+		/* if it is remote search and has been successfully parsed*/
+		if ((rmt=scan_remote_search(temp,&rmt_flag))!=NULL)
 		{
-			fprintf(stderr,"%s %s %s\n",rmt->node,rmt->port,rmt->name);
 			if ((para=(Client_para*)malloc(sizeof(Client_para)))==NULL)
 			{
 				perror("malloc");
@@ -102,6 +103,11 @@ int main(int argc, char *argv[]) {
 			pthread_mutex_unlock(&(mysearch->lock));
 			continue;
 		}
+		else if (rmt_flag==1)
+		{
+			/* if a : used to appear there but has not been parsed, neglect it */
+			continue;
+		}
 		if (strcmp(temp, STREAM_REDIRECT) == 0)
 			/* "-" redirect the io to stdin*/
 		{
@@ -116,7 +122,7 @@ int main(int argc, char *argv[]) {
 	}
 	get_time(&t_end);
 	tdiff=time_diff(&t_start,&t_end);
-	print_stat(&(mysearch->statistics),tdiff);
+	print_stat(stdout,&(mysearch->statistics),tdiff);
 	destroy_search(mysearch);
 
 	return 0;

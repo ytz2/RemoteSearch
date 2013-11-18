@@ -44,9 +44,10 @@ search* build_search(msg_one *flags)
 /*once receive the search parameters from message 1
  * we should print out the agent fd, threadid and options
  */
-void print_search_para(int fd,search *mysearch)
+void print_search_para(int fd, search *mysearch)
 {
-	printf("Agent fd: %d, thread id: %lu \n",fd,(unsigned long)pthread_self());
+	fprintf(stderr, "Client's Options, thread fd:%d thread id: %lu\n",
+			fd,(unsigned long)pthread_self());
 	print_flag(mysearch->options_flags, DOT_ACCESS, "-a");
 	print_flag(mysearch->options_flags, AT_BEGIN, "-b");
 	print_flag(mysearch->options_flags, AT_END , "-e");
@@ -55,11 +56,11 @@ void print_search_para(int fd,search *mysearch)
 	print_flag(mysearch->options_flags, SHOW_PATH, "-p");
 	print_flag(mysearch->options_flags, NO_ERR_MSG, "-q");
 	print_flag(mysearch->options_flags, INVERSE_PRINT, "-i");
-	fprintf(stderr,"%d\t%s\n",mysearch->max_dir_depth,"-d");
-	fprintf(stderr,"%d\t%s\n",mysearch->line_buffer_size==DEFAULT_LINE_BUFFER?-1:mysearch->line_buffer_size,"-l");
-	fprintf(stderr,"%d\t%s\n",mysearch->max_line_number,"-m");
-	fprintf(stderr,"%d\t%s\n",mysearch->column_number,"-n");
-	fprintf(stderr,"%d\t%s\n",mysearch->thread_limits,"-t");
+	fprintf(stderr,"%s\t%d\n","-d",mysearch->max_dir_depth);
+	fprintf(stderr,"%s\t%d\n","-l",mysearch->line_buffer_size==DEFAULT_LINE_BUFFER?-1:mysearch->line_buffer_size);
+	fprintf(stderr,"%s\t%d\n","-m",mysearch->max_line_number);
+	fprintf(stderr,"%s\t%d\n","-n",mysearch->column_number);
+	fprintf(stderr,"%s\t%d\n","-t",mysearch->thread_limits);
 }
 
 /* the agent is now a separate thread */
@@ -69,15 +70,19 @@ server_agent(void *params)
 	int			client_fd, n, errcode;
 	enum header_types	type;
 	unsigned int		len;
-	struct sockaddr_in	*iptr;
 	char to_search[MAX_SEARCH_STR];
-	char			text_buf[TEXT_SIZE];
 	char remote_obj[REMOTE_NAME_MAX];
 	time_type t_start,t_end;
 	double tdiff;
 	msg_one msg1;
 	search *mysearch;
 	Statistics statistic;
+
+	/* we are now successfully connected to a remote client */
+	client_fd = ((struct thread_params *)params)->client_fd;
+	fprintf(stderr,"Starting Agent fd: %d, thread id: %lu \n",client_fd,(unsigned long)pthread_self());
+
+	/* do some initialization*/
 	memset(&statistic,0,sizeof(Statistics));
 	errcode = pthread_detach(pthread_self());
 	if (errcode != 0) {
@@ -85,17 +90,7 @@ server_agent(void *params)
 			strerror(errcode));
 	}
 	pthread_once(&init_done, thread_init);
-	/* we are now successfully connected to a remote client */
-	client_fd = ((struct thread_params *)params)->client_fd;
-	iptr = (struct sockaddr_in *)(&((struct thread_params *)params)->client);
-	if (inet_ntop(iptr->sin_family, &iptr->sin_addr, text_buf,
-						TEXT_SIZE) == NULL) {
-		perror("inet_ntop client");
-		free(params);
-		pthread_exit(NULL);
-	}
-	fprintf(stderr,"server plcsd connected to client at IP address %s "
-		"port %d\n", text_buf, ntohs(iptr->sin_port));
+
 	get_time(&t_start);
 	len=sizeof(msg_one);
 	/* first message should be the file name */
@@ -158,12 +153,11 @@ server_agent(void *params)
 	}
 	get_time(&t_end);
 	tdiff=time_diff(&t_start,&t_end);
-	fprintf(stdout,"Search Statistics: client fd %u, thread id %lu\n",
+	fprintf(stderr,"Search Statistics: client fd %u, thread id %lu\n",
 			mysearch->client_fd,(unsigned long)pthread_self());
-	print_stat(&mysearch->statistics,tdiff);
+	print_stat(stderr,&mysearch->statistics,tdiff);
 	destroy_search(mysearch);
-	fprintf(stderr,"server plcsd disconnected from client at "
-		"IP address %s port %d\n", text_buf, ntohs(iptr->sin_port));
+	fprintf(stderr,"Terminating Agent fd: %d, thread id: %lu \n",client_fd,(unsigned long)pthread_self());
 	free(params);
 	return NULL;
 }	/* server_agent */
@@ -175,12 +169,30 @@ void listener(char *server_port, char *interface_name)
 	struct sockaddr		server;
 	struct sockaddr_in	*iptr;
 	char			text_buf[TEXT_SIZE];
+	char local_node[HOSTMAX];
+	char *host_name;
 	struct thread_params	*params;
 	pthread_t		agent_id;
 
 	no_sigpipe();
 	/* establish a server "listening post" */
 	listening_fd = openlistener(server_port, interface_name, &server);
+
+	/* get the hostname of server*/
+	if (interface_name==NULL)
+	{
+		if (gethostname(local_node,HOSTMAX)<0)
+		{
+			perror("Server gethostname");
+			exit(1);
+		}
+		host_name=local_node;
+	}
+	else
+	{
+		host_name=interface_name;
+	}
+
 	if (listening_fd < 0)
 		exit(EXIT_FAILURE);
 
@@ -193,8 +205,8 @@ void listener(char *server_port, char *interface_name)
 			perror("inet_ntop server");
 			break;
 		}
-		fprintf(stderr,"\nrplcsd listening at IP address %s port %d\n\n",
-			text_buf, ntohs(iptr->sin_port));
+		fprintf(stderr,"%s listening at IP address %s port %d\n",
+			host_name,text_buf, ntohs(iptr->sin_port));
 		/* accept a client connection (block until one arrives) */
 		params = malloc(sizeof(struct thread_params));
 		if (params == NULL) {
@@ -207,6 +219,16 @@ void listener(char *server_port, char *interface_name)
 			perror("rplcsd accept");
 			break;
 		}
+
+		iptr = (struct sockaddr_in *)(&params->client);
+		if (inet_ntop(iptr->sin_family, &iptr->sin_addr, text_buf,
+							TEXT_SIZE) == NULL) {
+			perror("inet_ntop client");
+			free(params);
+			continue;
+		}
+		fprintf(stderr,"connected to client at IP address %s "
+			"port %d\n", text_buf, ntohs(iptr->sin_port));
 
 		/* we are now successfully connected to a remote client */
 		errcode = pthread_create(&agent_id, NULL, server_agent, params);
