@@ -48,6 +48,8 @@ void client(remote *rmt, search *mysearch) {
 	struct sockaddr server, client;
 	enum header_types type;
 	msg_one msg1;
+	struct sockaddr_in        *iptr;
+	char                       text_buf[TEXT_SIZE];
 	char *out_buffer;
 	Statistics *temp;
 	temp = NULL;
@@ -55,71 +57,76 @@ void client(remote *rmt, search *mysearch) {
 	/*prepare for message 1*/
 	build_msg1(&msg1, mysearch);
 	pthread_cleanup_push(cleanup_client,mysearch);
-		/* ignore sigpipe signals -- handle the error synchronously */
-		no_sigpipe();
+	/* ignore sigpipe signals -- handle the error synchronously */
+	no_sigpipe();
 
-		/* establish a connection to indicated server */
-		fd = openclient(rmt->port, rmt->node, &server, &client);
-		if (fd < 0)
-			pthread_exit(NULL);
-		/* we are now successfully connected to a remote server */
-		/* send the first message */
+	/* establish a connection to indicated server */
+	fd = openclient(rmt->port, rmt->node, &server, &client);
+	if (fd < 0)
+		pthread_exit(NULL);
+	/* we are now successfully connected to a remote server */
+	/* send the first message */
+    iptr = (struct sockaddr_in *)&server;
+     if (inet_ntop(iptr->sin_family, &iptr->sin_addr, text_buf, TEXT_SIZE)
+                                                             == NULL) {
+             perror("inet_ntop server");
+             pthread_exit(NULL);
+     }
+	if (our_send_message(fd, OPTION_PARAMETER, sizeof(msg_one), &msg1)
+			!= 0) {
+		fprintf(stderr, "Fail to send options parameters\n");
+		pthread_exit(NULL);
+	}
 
-		if (our_send_message(fd, OPTION_PARAMETER, sizeof(msg_one), &msg1)
-				!= 0) {
-			fprintf(stderr, "Fail to send options parameters\n");
-			pthread_exit(NULL);
-		}
+	/* send the second message */
+	if (our_send_message(fd, TO_SEARCH,
+			(strlen(mysearch->search_pattern) + 1) * sizeof(char),
+			mysearch->search_pattern) != 0) {
+		fprintf(stderr, "Fail to send search string\n");
+		pthread_exit(NULL);
+	}
 
-		/* send the second message */
-		if (our_send_message(fd, TO_SEARCH,
-				(strlen(mysearch->search_pattern) + 1) * sizeof(char),
-				mysearch->search_pattern) != 0) {
-			fprintf(stderr, "Fail to send search string\n");
-			pthread_exit(NULL);
-		}
+	/* send the third message */
+	if (our_send_message(fd, REMOTE_NAME,
+			(strlen(rmt->name) + 1) * sizeof(char), rmt->name) != 0) {
+		fprintf(stderr, "Fail to send remote_name\n");
+		pthread_exit(NULL);
+	}
 
-		/* send the third message */
-		if (our_send_message(fd, REMOTE_NAME,
-				(strlen(rmt->name) + 1) * sizeof(char), rmt->name) != 0) {
-			fprintf(stderr, "Fail to send remote_name\n");
-			pthread_exit(NULL);
-		}
+	out_buffer = pthread_getspecific(out_buffer_key);
+	/* allocate memory to buffer*/
+	if (out_buffer == NULL) {
+		out_buffer = (char*) malloc(MAX_TCP_STD);
+		pthread_setspecific(out_buffer_key, out_buffer);
+	}
 
-		out_buffer = pthread_getspecific(out_buffer_key);
-		/* allocate memory to buffer*/
-		if (out_buffer == NULL) {
-			out_buffer = (char*) malloc(MAX_TCP_STD);
-			pthread_setspecific(out_buffer_key, out_buffer);
-		}
+	/* receive the message 4,5 */
 
-		/* receive the message 4,5 */
+	while (1) {
+		/* read next chunk of text then the text */
+		len = MAX_TCP_STD;
+		if ((n = our_recv_message(fd, &type, &len, out_buffer)) < 0)
+			break;
+		if (type == OUTPUT_STD)
+			fprintf(stdout, "%s:%s/%s", text_buf, rmt->port, out_buffer);
+		else if (type == OUTPUT_ERR)
+			fprintf(stderr, "%s:%s/%s", text_buf, rmt->port, out_buffer);
+		else if (type == STATISTICS_MSG) {
+			temp = (Statistics *) out_buffer;
+			trans_stat2recv(temp); /* avoid little/big endian issues*/
+			pthread_mutex_lock(&(mysearch->lock));
+			update_statistics_sock(&(mysearch->statistics), temp);
+			pthread_mutex_unlock(&(mysearch->lock));
+			break;
+		} else
+			break;
+		fflush(stderr);
+		fflush(stdout);
+	}
 
-		while (1) {
-			/* read next chunk of text then the text */
-			len = MAX_TCP_STD;
-			if ((n = our_recv_message(fd, &type, &len, out_buffer)) < 0)
-				break;
-			if (type == OUTPUT_STD)
-				fprintf(stdout, "%s:%s/%s", rmt->node, rmt->port, out_buffer);
-			else if (type == OUTPUT_ERR)
-				fprintf(stderr, "%s:%s/%s", rmt->node, rmt->port, out_buffer);
-			else if (type == STATISTICS_MSG) {
-				temp = (Statistics *) out_buffer;
-				trans_stat2recv(temp); /* avoid little/big endian issues*/
-				pthread_mutex_lock(&(mysearch->lock));
-				update_statistics_sock(&(mysearch->statistics), temp);
-				pthread_mutex_unlock(&(mysearch->lock));
-				break;
-			} else
-				break;
-			fflush(stderr);
-			fflush(stdout);
-		}
-
-		/* explicitly pop*/
-		pthread_cleanup_pop(1);
-		/* close the connection to the server */
+	/* explicitly pop*/
+	pthread_cleanup_pop(1);
+	/* close the connection to the server */
 	if (close(fd) < 0) {
 		perror("client close");
 		pthread_exit(NULL);

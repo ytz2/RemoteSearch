@@ -160,76 +160,76 @@ void scan_opt_search(int argc, char *argv[], search *mysearch) {
 			monitor_state = scan_switch_number(c, &mysearch->line_buffer_size);
 			if (mysearch->line_buffer_size
 					<= 0|| mysearch->line_buffer_size >= MAX_LINE_BUFFER) {fprintf(stderr, "Illegal numeric value \"%d\" for switch -l\n",
-					mysearch->line_buffer_size);
-			mysearch->line_buffer_size = DEFAULT_LINE_BUFFER;
-			state = -1;
-		} else if (monitor_state == -1) {
-			state = -1;
-			monitor_state = 0;
-		}
-		break;
+							mysearch->line_buffer_size);
+					mysearch->line_buffer_size = DEFAULT_LINE_BUFFER;
+					state = -1;
+			} else if (monitor_state == -1) {
+				state = -1;
+				monitor_state = 0;
+			}
+			break;
 		case 'm': /* set maximum lines to be processed */
-		monitor_state = scan_switch_number(c, &mysearch->max_line_number);
-		if (mysearch->max_line_number <= 0) {
-			fprintf(stderr, "Illegal numeric value \"%d\" for switch -m\n",
-					mysearch->max_line_number);
-			mysearch->max_line_number = -1;
-			state = -1;
-			monitor_state = 0;
-		} else if (monitor_state == -1) {
-			state = -1;
-			monitor_state = 0;
-		}
-		break;
+			monitor_state = scan_switch_number(c, &mysearch->max_line_number);
+			if (mysearch->max_line_number <= 0) {
+				fprintf(stderr, "Illegal numeric value \"%d\" for switch -m\n",
+						mysearch->max_line_number);
+				mysearch->max_line_number = -1;
+				state = -1;
+				monitor_state = 0;
+			} else if (monitor_state == -1) {
+				state = -1;
+				monitor_state = 0;
+			}
+			break;
 		case 'n': /* set column number to print line number */
-		monitor_state = scan_switch_number(c, &mysearch->column_number);
-		if (mysearch->column_number >= MAX_COLS || mysearch->column_number <= 0) {
-			fprintf(stderr, "Illegal numeric value \"%d\" for switch -n\n",
-					mysearch->column_number);
-			mysearch->column_number = -1;
-			state = -1;
-			monitor_state = 0;
-		} else if (monitor_state == -1) {
-			state = -1;
-			monitor_state = 0;
-		}
-		break;
+			monitor_state = scan_switch_number(c, &mysearch->column_number);
+			if (mysearch->column_number >= MAX_COLS || mysearch->column_number <= 0) {
+				fprintf(stderr, "Illegal numeric value \"%d\" for switch -n\n",
+						mysearch->column_number);
+				mysearch->column_number = -1;
+				state = -1;
+				monitor_state = 0;
+			} else if (monitor_state == -1) {
+				state = -1;
+				monitor_state = 0;
+			}
+			break;
 		case 't': /* set the line depth */
-		monitor_state = scan_switch_number(c, &mysearch->thread_limits);
-		if (mysearch->thread_limits < 0) {
-			fprintf(stderr, "Illegal numeric value \"%d\" for switch -d\n",
-					mysearch->thread_limits);
-			mysearch->thread_limits = -1;
-			state = -1;
-			monitor_state = 0;
-		} else if (monitor_state == -1) {
-			state = -1;
-			monitor_state = 0;
-		}
-		break;
+			monitor_state = scan_switch_number(c, &mysearch->thread_limits);
+			if (mysearch->thread_limits < 0) {
+				fprintf(stderr, "Illegal numeric value \"%d\" for switch -d\n",
+						mysearch->thread_limits);
+				mysearch->thread_limits = -1;
+				state = -1;
+				monitor_state = 0;
+			} else if (monitor_state == -1) {
+				state = -1;
+				monitor_state = 0;
+			}
+			break;
 		case 'd': /* set column number to print line number */
-		monitor_state = scan_switch_number(c, &mysearch->max_dir_depth);
-		if (mysearch->max_dir_depth < 0) {
-			fprintf(stderr, "Illegal numeric value \"%d\" for switch -n\n",
-					mysearch->max_dir_depth);
-			mysearch->max_dir_depth = -1;
-			state = -1;
-			monitor_state = 0;
-		} else if (monitor_state == -1) {
-			state = -1;
-			monitor_state = 0;
-		}
-		break;
+			monitor_state = scan_switch_number(c, &mysearch->max_dir_depth);
+			if (mysearch->max_dir_depth < 0) {
+				fprintf(stderr, "Illegal numeric value \"%d\" for switch -n\n",
+						mysearch->max_dir_depth);
+				mysearch->max_dir_depth = -1;
+				state = -1;
+				monitor_state = 0;
+			} else if (monitor_state == -1) {
+				state = -1;
+				monitor_state = 0;
+			}
+			break;
 		case ':':
-		fprintf(stderr, "Missing parameter to switch '%c'\n", optopt);
-		state = -1;
-		break;
+			fprintf(stderr, "Missing parameter to switch '%c'\n", optopt);
+			state = -1;
+			break;
 		case '?':
-		fprintf(stderr, "Illegal switch '%c'\n", optopt);
-		state = -1;
-		break;
-	} /* switch */
-}
+			fprintf(stderr, "Illegal switch '%c'\n", optopt);
+			state = -1;
+			break;
+		} /* switch */
+	}
 	if (state == -1)
 		exit(EXIT_FAILURE);
 
@@ -292,10 +292,10 @@ remote* scan_remote_search(char *buffer, int *flag) {
 	 * or : and / position exceed our predefined size
 	 *  */
 	if (slash == -1|| slash==len-1 ||slash-colon==1||
-	colon>HOSTMAX || (slash-colon-1)>PORT_MAX
-	|| (len-slash)>REMOTE_NAME_MAX) {fprintf(stderr,"%s has the wrong remote_name format\n",input);
-	return NULL;
-}
+			colon>HOSTMAX || (slash-colon-1)>PORT_MAX
+			|| (len-slash)>REMOTE_NAME_MAX) {fprintf(stderr,"%s has the wrong remote_name format\n",input);
+			return NULL;
+	}
 	if ((rmt = (remote*) malloc(sizeof(remote))) == NULL) {
 		perror("malloc");
 		return NULL;

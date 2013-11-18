@@ -197,8 +197,8 @@ void search_stream(FILE *fptr, char* filename, search *mysearch, Node* current) 
 	/*process each line in the input*/errno = 0;
 	for (lineno = 1;
 			!feof(fptr)
-					&& fgets(any_line_buffer, mysearch->line_buffer_size + 1,
-							fptr) != NULL; lineno++) {
+							&& fgets(any_line_buffer, mysearch->line_buffer_size + 1,
+									fptr) != NULL; lineno++) {
 		if (mysearch->max_line_number >= 0
 				&& output_lineno > mysearch->max_line_number)
 			break;

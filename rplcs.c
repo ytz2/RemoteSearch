@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
 			continue;
 		}
 		if (strcmp(temp, STREAM_REDIRECT) == 0)
-		/* "-" redirect the io to stdin*/
+			/* "-" redirect the io to stdin*/
 		{
 			search_stream(stdin, NULL, mysearch, NULL);
 			continue;

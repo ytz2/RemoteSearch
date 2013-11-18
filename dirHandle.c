@@ -146,8 +146,8 @@ int stack_push(stack *st, Node *current, Node *next) {
 	if (st->head == NULL)
 		st->head = current;
 	else
-	/* if one subdirectory added, the current counter increase*/
-	/* link the next to the current node*/
+		/* if one subdirectory added, the current counter increase*/
+		/* link the next to the current node*/
 	{
 		current->counter++;
 		next->prev = current;
@@ -202,7 +202,7 @@ int stack_job_done(stack *st, Node *current) {
 		return err;
 	}
 	if (temp == NULL)
-	/*if it is the root */
+		/*if it is the root */
 	{
 		/* before destroy the stack update the stack statistics
 		 * to search object statistics
