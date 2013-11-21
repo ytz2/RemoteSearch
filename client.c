@@ -16,11 +16,11 @@
 void build_msg1(msg_one *msg1, search *mysearch) {
 	msg1->options_flags = htonl(mysearch->options_flags);
 	msg1->max_dir_depth = htonl(mysearch->max_dir_depth);
-	msg1->line_buffer_size = htonl(mysearch->line_buffer_size);
 	if (mysearch->line_buffer_size == DEFAULT_LINE_BUFFER)
-		msg1->max_line_number = htonl(-1);
+		msg1->line_buffer_size = htonl(-1);
 	else
-		msg1->max_line_number = htonl(mysearch->max_line_number);
+		msg1->line_buffer_size = htonl(mysearch->line_buffer_size);
+	msg1->max_line_number = htonl(mysearch->max_line_number);
 	msg1->column_number = htonl(mysearch->column_number);
 	msg1->thread_limits = htonl(mysearch->thread_limits);
 }

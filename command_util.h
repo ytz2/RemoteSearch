@@ -113,11 +113,11 @@ typedef struct Client_parameters {
 
 typedef struct Message_one {
 	unsigned int options_flags; /* work with switch options_flags*/
+	int max_dir_depth; /* work with -d number */
 	int line_buffer_size; /* work with -l number*/
 	int max_line_number; /* work with -m number*/
 	int column_number; /* work with -n number*/
 	int thread_limits; /* work with -t number*/
-	int max_dir_depth; /* work with -d number */
 } msg_one;
 /* define the element structure for history stack */
 typedef struct STACK stack; //pre declaration

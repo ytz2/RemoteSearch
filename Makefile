@@ -1,6 +1,6 @@
 # Created by Yanhua Liu
-# Makefile for CS820 Assignment 2
-# Object: plcs
+# Makefile for CS820 Assignment 3
+# Object: rplcs rplcsd
 
 
 CC=gcc
