@@ -104,9 +104,9 @@ echo
 echo "---------------------------------------------------"
 echo "1. 4 #define lines in header files (deducted 2 pt)"
 echo " Command: cat ospenv.h"
-echo "command: grep ospenv.h *.h plcs.c"
+echo "command: grep ospenv.h *.h rplcs.c"
 cat ospenv.h
-grep ospenv.h *.h plcs.c
+grep ospenv.h *.h rplcs.c
 echo "---------------------------------------------------"
 echo
 echo "---------------------------------------------------"
@@ -114,9 +114,9 @@ echo "2. -l para and para should be positive and less than MAX_LINE_BUFFER"
 echo "   -m para and para should be positive"
 echo "   -n para and para should be positive and less than MAX_COLS"
 echo " deducted 5 pts"
-echo "Command: ./plcs -l-1 -l0 -l4096 -m-1 -m0  -n-1 -n16 'nothing' nonexist"
+echo "Command: ./rplcs -l-1 -l0 -l4096 -m-1 -m0  -n-1 -n16 'nothing' nonexist"
 errfile=temp.err
-./plcs -l-1 -l0 -l4096 -m-1 -m0  -n-1 -n16 nothing nonexist 2> $errfile
+./rplcs -l-1 -l0 -l4096 -m-1 -m0  -n-1 -n16 nothing nonexist 2> $errfile
 EXIT=$?
 cat $errfile
 print_status $EXIT
@@ -131,8 +131,8 @@ echo "   deducted 1 pt"
 out_file=tem.out
 err_file=temp.err
 in_file=test000.in
-echo "COMMAND:./plcs -m2 is $in_file >$out_file 2>$err_file"
-./plcs -m2 is $in_file >$out_file 2>$err_file
+echo "COMMAND:./rplcs -m2 is $in_file >$out_file 2>$err_file"
+./rplcs -m2 is $in_file >$out_file 2>$err_file
 EXIT=$?
 echo "SAMPLE INPUT:"
 cat $in_file
@@ -160,8 +160,8 @@ echo "---------------------------------------------------"
 echo "5  -h print a line of usage, after -h exit with success"
 echo "   -p -v switch help inf (I am very sad here TOT)"
 echo "   deducted 4 pts"
-echo " command: ./plcs -h -n20 -l 3"s
-./plcs -h -n20 -l 3 
+echo " command: ./rplcs -h -n20 -l 3"s
+./rplcs -h -n20 -l 3 
 EXIT=$?
 print_status $EXIT
 echo "EXPECTED EXIT: SUCCESS"
@@ -173,8 +173,8 @@ echo "   deducted 1 pt"
 out_file=tem.out
 err_file=temp.err
 in_file=test000.in
-echo "COMMAND:./plcs -p -n3 is $in_file >$out_file 2>$err_file"
-./plcs -p -n3 is $in_file >$out_file 2>$err_file
+echo "COMMAND:./rplcs -p -n3 is $in_file >$out_file 2>$err_file"
+./rplcs -p -n3 is $in_file >$out_file 2>$err_file
 EXIT=$?
 echo "SAMPLE INPUT:"
 cat $in_file
@@ -212,8 +212,8 @@ test_file=000
 out_file=test$test_section.out
 err_file=test$test_section.err
 in_file=test$test_file.in
-echo "COMMAND:./plcs -h "???" $in_file >$out_file 2>$err_file"
-./plcs -h "???" $in_file >$out_file 2>$err_file
+echo "COMMAND:./rplcs -h "???" $in_file >$out_file 2>$err_file"
+./rplcs -h "???" $in_file >$out_file 2>$err_file
 
 EXIT=$?
 echo "SAMPLE INPUT:"
@@ -244,8 +244,8 @@ out_file=test$test_section.out
 err_file=test$test_section.err
 in_file=test$test_file.in
 
-echo "COMMAND:./plcs "test" $in_file >$out_file 2>$err_file"
-./plcs "test" $in_file >$out_file 2>$err_file
+echo "COMMAND:./rplcs "test" $in_file >$out_file 2>$err_file"
+./rplcs "test" $in_file >$out_file 2>$err_file
 
 EXIT=$?
 echo "SAMPLE INPUT:"
@@ -275,8 +275,8 @@ test_file=001
 out_file=test$test_section.out
 err_file=test$test_section.err
 in_file=test$test_file.in
-echo "COMMAND:./plcs "sing" $in_file >$out_file 2>$err_file"
-./plcs "sing" $in_file >$out_file 2>$err_file
+echo "COMMAND:./rplcs "sing" $in_file >$out_file 2>$err_file"
+./rplcs "sing" $in_file >$out_file 2>$err_file
 
 EXIT=$?
 echo "SAMPLE INPUT:"
@@ -305,8 +305,8 @@ test_file=000
 out_file=test$test_section.out
 err_file=test$test_section.err
 in_file=test$test_file.in
-echo "COMMAND:./plcs "" $in_file >$out_file 2>$err_file"
-./plcs "" $in_file >$out_file 2>$err_file
+echo "COMMAND:./rplcs "" $in_file >$out_file 2>$err_file"
+./rplcs "" $in_file >$out_file 2>$err_file
 
 EXIT=$?
 echo "SAMPLE INPUT:"
@@ -339,8 +339,8 @@ test_file=000
 out_file=test$test_section.out
 err_file=test$test_section.err
 in_file=test$test_file.in
-echo "COMMAND:./plcs "test" $in_file >$out_file 2>$err_file"
-./plcs "test" $in_file >$out_file 2>$err_file
+echo "COMMAND:./rplcs "test" $in_file >$out_file 2>$err_file"
+./rplcs "test" $in_file >$out_file 2>$err_file
 
 EXIT=$?
 echo "SAMPLE INPUT:"
@@ -371,8 +371,8 @@ err_file=test$test_section.err
 in_file1=test$test_file1.in
 in_file2=test$test_file2.in
 in_file3=test$test_file3.in
-echo "COMMAND:./plcs "is" $in_file1 $in_file2 $infile3 >$out_file 2>$err_file"
-./plcs "is" $in_file1 $in_file2 $infile3 >$out_file 2>$err_file
+echo "COMMAND:./rplcs "is" $in_file1 $in_file2 $infile3 >$out_file 2>$err_file"
+./rplcs "is" $in_file1 $in_file2 $infile3 >$out_file 2>$err_file
 
 EXIT=$?
 echo "SAMPLE INPUT:"
@@ -407,8 +407,8 @@ out_file=test$test_section.out
 err_file=test$test_section.err
 in_file1=test$test_file1.in
 in_file2=test$test_file2.in
-echo "COMMAND: ./plcs "is" - - <$in_file1 $in_file2 >$out_file 2>$err_file"
-./plcs "is" - - <$in_file1 $in_file2 >$out_file 2>$err_file
+echo "COMMAND: ./rplcs "is" - - <$in_file1 $in_file2 >$out_file 2>$err_file"
+./rplcs "is" - - <$in_file1 $in_file2 >$out_file 2>$err_file
 
 EXIT=$?
 echo "SAMPLE INPUT:"
@@ -440,8 +440,8 @@ out_file=test$test_section.out
 err_file=test$test_section.err
 in_file1=test$test_file1.in
 in_file2=test$test_file2.in
-echo "COMMAND:./plcs "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file"
-./plcs "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file
+echo "COMMAND:./rplcs "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file"
+./rplcs "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file
 
 EXIT=$?
 echo "SAMPLE INPUT:"
@@ -487,8 +487,8 @@ test_file=000
 out_file=test$test_section.out
 err_file=test$test_section.err
 in_file=test$test_file.in
-echo "COMMAND: ./plcs -b "test" $in_file >$out_file 2>$err_file"
-./plcs -b "test" $in_file >$out_file 2>$err_file
+echo "COMMAND: ./rplcs -b "test" $in_file >$out_file 2>$err_file"
+./rplcs -b "test" $in_file >$out_file 2>$err_file
 EXIT=$?
 echo "SAMPLE INPUT:"
 cat test$test_file.in
@@ -514,8 +514,8 @@ test_file=001
 out_file=test$test_section.out
 err_file=test$test_section.err
 in_file=test$test_file.in
-echo "COMMAND: ./plcs -e "singing" $in_file >$out_file 2>$err_file"
-./plcs -e "singing" $in_file >$out_file 2>$err_file
+echo "COMMAND: ./rplcs -e "singing" $in_file >$out_file 2>$err_file"
+./rplcs -e "singing" $in_file >$out_file 2>$err_file
 EXIT=$?
 echo "SAMPLE INPUT:"
 cat test$test_file.in
@@ -542,8 +542,8 @@ test_file=001
 out_file=test$test_section.out
 err_file=test$test_section.err
 in_file=test$test_file.in
-echo "COMMAND: ./plcs -be "singing" $in_file >$out_file 2>$err_file"
-./plcs -be "singing" $in_file >$out_file 2>$err_file
+echo "COMMAND: ./rplcs -be "singing" $in_file >$out_file 2>$err_file"
+./rplcs -be "singing" $in_file >$out_file 2>$err_file
 EXIT=$?
 echo "SAMPLE INPUT:"
 cat test$test_file.in
@@ -570,8 +570,8 @@ test_file=001
 out_file=test$test_section.out
 err_file=test$test_section.err
 in_file=test$test_file.in
-echo "COMMAND: ./plcs -i "bird" $in_file >$out_file 2>$err_file"
-./plcs -i "bird" $in_file >$out_file 2>$err_file
+echo "COMMAND: ./rplcs -i "bird" $in_file >$out_file 2>$err_file"
+./rplcs -i "bird" $in_file >$out_file 2>$err_file
 EXIT=$?
 echo "SAMPLE INPUT:"
 cat test$test_file.in
@@ -600,8 +600,8 @@ out_file=test$test_section.out
 err_file=test$test_section.err
 in_file1=test$test_file1.in
 in_file2=test$test_file2.in
-echo "COMMAND:./plcs -p "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file"
-./plcs -p "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file
+echo "COMMAND:./rplcs -p "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file"
+./rplcs -p "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file
 
 EXIT=$?
 echo "SAMPLE INPUT:"
@@ -636,8 +636,8 @@ test_file=001
 out_file=test$test_section.out
 err_file=test$test_section.err
 in_file=test$test_file.in
-echo "COMMAND: ./plcs -v "singing" $in_file >$out_file 2>$err_file"
-./plcs -v "singing" $in_file >$out_file 2>$err_file
+echo "COMMAND: ./rplcs -v "singing" $in_file >$out_file 2>$err_file"
+./rplcs -v "singing" $in_file >$out_file 2>$err_file
 EXIT=$?
 echo "SAMPLE INPUT:"
 cat test$test_file.in
@@ -664,8 +664,8 @@ test_file=001
 out_file=test$test_section.out
 err_file=test$test_section.err
 in_file=test$test_file.in
-echo "COMMAND: ./plcs -l7 "singing" $in_file >$out_file 2>$err_file"
-./plcs -l7 "singing" $in_file >$out_file 2>$err_file
+echo "COMMAND: ./rplcs -l7 "singing" $in_file >$out_file 2>$err_file"
+./rplcs -l7 "singing" $in_file >$out_file 2>$err_file
 EXIT=$?
 echo "SAMPLE INPUT:"
 cat test$test_file.in
@@ -692,8 +692,8 @@ test_file=001
 out_file=test$test_section.out
 err_file=test$test_section.err
 in_file=test$test_file.in
-echo "COMMAND: ./plcs -m6 "singing" $in_file >$out_file 2>$err_file"
-./plcs -m3 "singing" $in_file >$out_file 2>$err_file
+echo "COMMAND: ./rplcs -m6 "singing" $in_file >$out_file 2>$err_file"
+./rplcs -m3 "singing" $in_file >$out_file 2>$err_file
 EXIT=$?
 echo "SAMPLE INPUT:"
 cat test$test_file.in
@@ -722,8 +722,8 @@ out_file=test$test_section.out
 err_file=test$test_section.err
 in_file1=test$test_file1.in
 in_file2=test$test_file2.in
-echo "COMMAND:./plcs -p -n7 "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file"
-./plcs -p -n7 "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file
+echo "COMMAND:./rplcs -p -n7 "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file"
+./rplcs -p -n7 "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file
 
 EXIT=$?
 echo "SAMPLE INPUT:"
@@ -763,8 +763,8 @@ out_file=test$test_section.out
 err_file=test$test_section.err
 in_file1=test$test_file1.in
 in_file2=test$test_file2.in
-echo "COMMAND:./plcs -ipv -l50 -m3 -n7 "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file"
-./plcs  -ipv -l50 -m3 -n7 "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file
+echo "COMMAND:./rplcs -ipv -l50 -m3 -n7 "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file"
+./rplcs  -ipv -l50 -m3 -n7 "is" - $in_file2 - <$in_file1 <$in_file1 >$out_file 2>$err_file
 
 EXIT=$?
 echo "SAMPLE INPUT:"
@@ -799,8 +799,8 @@ test_file1=000
 out_file=test$test_section.out
 err_file=test$test_section.err
 in_file1=test$test_file1.in
-echo "COMMAND:./plcs -beipv -l50 -m8 -n7 "test" $in_file1 >$out_file 2>$err_file"
-./plcs  -beipv -l50 -m6 -n7 "test"  $in_file1 >$out_file 2>$err_file
+echo "COMMAND:./rplcs -beipv -l50 -m8 -n7 "test" $in_file1 >$out_file 2>$err_file"
+./rplcs  -beipv -l50 -m6 -n7 "test"  $in_file1 >$out_file 2>$err_file
 
 EXIT=$?
 echo "SAMPLE INPUT:"
@@ -838,8 +838,8 @@ echo "        and exit with failure"
 test_section=310
 out_file=test$test_section.out
 err_file=test$test_section.err
-echo "COMMAND:./plcs >$out_file 2>$err_file"
-./plcs >$out_file 2>$err_file
+echo "COMMAND:./rplcs >$out_file 2>$err_file"
+./rplcs >$out_file 2>$err_file
 
 EXIT=$?
 
@@ -862,8 +862,8 @@ echo "        to process others untill all finished and exit with failure"
 test_section=320
 out_file=test$test_section.out
 err_file=test$test_section.err
-echo "COMMAND:./plcs  -abcdef  -l5 -l242424 -lAGAFA -m5 -m0 -n1341 -n15 is - >$out_file 2>$err_file"
-./plcs -abcdef  -l5 -l242424 -lAGAFA -m5 -n0 -m0 -n1341 -n15 is - <test000.in >$out_file 2>$err_file
+echo "COMMAND:./rplcs  -abcdef  -l5 -l242424 -lAGAFA -m5 -m0 -n1341 -n15 is - >$out_file 2>$err_file"
+./rplcs -abcdef  -l5 -l242424 -lAGAFA -m5 -n0 -m0 -n1341 -n15 is - <test000.in >$out_file 2>$err_file
 EXIT=$?
 
 echo "OUTPUT:"
@@ -886,8 +886,8 @@ test_file1=000
 out_file=test$test_section.out
 err_file=test$test_section.err
 in_file1=test$test_file1.in
-echo "COMMAND:./plcs  -bbbbeeeiippvvv -l50 -m8 -n7 "test" $in_file1 >$out_file 2>$err_file"
-./plcs  -bbbbeeeiippvvv -l50 -m6 -n7 "test"  $in_file1 >$out_file 2>$err_file
+echo "COMMAND:./rplcs  -bbbbeeeiippvvv -l50 -m8 -n7 "test" $in_file1 >$out_file 2>$err_file"
+./rplcs  -bbbbeeeiippvvv -l50 -m6 -n7 "test"  $in_file1 >$out_file 2>$err_file
 
 EXIT=$?
 echo "SAMPLE INPUT:"
@@ -916,8 +916,8 @@ test_file1=000
 out_file=test$test_section.out
 err_file=test$test_section.err
 in_file1=test$test_file1.in
-echo "COMMAND:./plcs  -l3 -m2 -l1 -l50 -m4 -n7 "test" $in_file1 >$out_file 2>$err_file"
-./plcs  -l3 -m2 -l1 -l50 -m4 -n7 "test"  $in_file1 >$out_file 2>$err_file
+echo "COMMAND:./rplcs  -l3 -m2 -l1 -l50 -m4 -n7 "test" $in_file1 >$out_file 2>$err_file"
+./rplcs  -l3 -m2 -l1 -l50 -m4 -n7 "test"  $in_file1 >$out_file 2>$err_file
 
 EXIT=$?
 echo "SAMPLE INPUT:"
@@ -946,8 +946,8 @@ test_file1=000
 out_file=test$test_section.out
 err_file=test$test_section.err
 in_file1=test$test_file1.in
-echo "COMMAND:./plcs  "test" notexist__ $in_file1 notexist2__ >$out_file 2>$err_file"
-./plcs  "test" notexist__ $in_file1 notexist2__ >$out_file 2>$err_file
+echo "COMMAND:./rplcs  "test" notexist__ $in_file1 notexist2__ >$out_file 2>$err_file"
+./rplcs  "test" notexist__ $in_file1 notexist2__ >$out_file 2>$err_file
 
 EXIT=$?
 echo "SAMPLE INPUT:"
@@ -1049,8 +1049,8 @@ echo "         any symbolic link, for simplicity, -t0 is set"
 
 test_section=311
 test_in=dir
-echo "Command: ./plcs -t0 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err"
- ./plcs -t0 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs -t0 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./rplcs -t0 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err
 
 EXIT=$?
 echo
@@ -1075,8 +1075,8 @@ echo "Expect:  The subdirectory/filename under depth 0 starts with ."
 echo "         get searched"
 test_section=3121
 test_in=dir
-echo "Command: ./plcs -t0 -n2 -p -a This $test_in 1>test$test_section.out 2>test$test_section.err"
- ./plcs -t0 -n2 -p -a This $test_in 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs -t0 -n2 -p -a This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./rplcs -t0 -n2 -p -a This $test_in 1>test$test_section.out 2>test$test_section.err
 EXIT=$?
 echo
 echo "OUTPUT:"
@@ -1097,8 +1097,8 @@ echo "Expect: level 0 filename has not correlation with -a switch"
 test_section=3122
 test_in1=dir
 test_in2=.test000.in
-echo "Command: ./plcs -t0 -n2 -p -a This $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err"
- ./plcs -t0 -n2 -p This $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs -t0 -n2 -p -a This $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err"
+ ./rplcs -t0 -n2 -p This $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err
 EXIT=$?
 echo
 echo "OUTPUT:"
@@ -1123,8 +1123,8 @@ echo "purpose: Test the -d error catching"
 echo "Expect:  Error report from -d"
 test_section=3131
 test_in=dir
-echo "Command: ./plcs -d-1 -d-5 This $test_in 1>test$test_section.out 2>test$test_section.err"
-  ./plcs -d-1 -d-5  This $test_in 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs -d-1 -d-5 This $test_in 1>test$test_section.out 2>test$test_section.err"
+  ./rplcs -d-1 -d-5  This $test_in 1>test$test_section.out 2>test$test_section.err
 EXIT=$?
 echo
 echo "OUTPUT:"
@@ -1148,8 +1148,8 @@ test_in2=.test000.in
 test_in3=test000.in
 test_in4=test001.in
 test_in5=dir2
-echo "Command: ./plcs -t0 -n2 -p -d0 is $test_in5 $test_in4 $test_in3 $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err"
-./plcs -t0 -n2 -p -d0 is $test_in5 $test_in4 $test_in3 $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs -t0 -n2 -p -d0 is $test_in5 $test_in4 $test_in3 $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err"
+./rplcs -t0 -n2 -p -d0 is $test_in5 $test_in4 $test_in3 $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err
 EXIT=$?
 echo
 echo "OUTPUT:"
@@ -1173,8 +1173,8 @@ test_in2=.test000.in
 test_in3=test000.in
 test_in4=test001.in
 test_in5=dir2
-echo "Command: ./plcs -t0 -n2 -p -d2 is $test_in5 $test_in4 $test_in3 $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err"
-./plcs -t0 -n2 -p -d2 is $test_in5 $test_in4 $test_in3 $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs -t0 -n2 -p -d2 is $test_in5 $test_in4 $test_in3 $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err"
+./rplcs -t0 -n2 -p -d2 is $test_in5 $test_in4 $test_in3 $test_in2 $test_in1 1>test$test_section.out 2>test$test_section.err
 EXIT=$?
 echo
 echo "OUTPUT:"
@@ -1194,8 +1194,8 @@ echo "purpose: Only search untill level 2 files"
 echo "Expect:  report of the limit 2 is encountered"
 test_section=3134
 test_in=dir/A/A
-echo "Command: ./plcs -t0 -n2 -p -d2 is  $test_in 1>test$test_section.out 2>test$test_section.err"
- ./plcs -t0 -n2 -p -d2 is  $test_in 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs -t0 -n2 -p -d2 is  $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./rplcs -t0 -n2 -p -d2 is  $test_in 1>test$test_section.out 2>test$test_section.err
 EXIT=$?
 echo
 echo "OUTPUT:"
@@ -1218,8 +1218,8 @@ echo "purpose: Test -f stop softlink following"
 echo "Expect:  Error report for symlink"
 test_section=3141
 test_in=dir
-echo "Command: ./plcs -t0 -n2 -p -f This $test_in 1>test$test_section.out 2>test$test_section.err"
- ./plcs -t0 -n2 -p -f This $test_in 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs -t0 -n2 -p -f This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./rplcs -t0 -n2 -p -f This $test_in 1>test$test_section.out 2>test$test_section.err
 EXIT=$?
 echo
 echo "OUTPUT:"
@@ -1243,8 +1243,8 @@ echo "purpose: the loop is due to symlink but the link can be detected otherwher
 echo "Expect:  Error report for loop"
 test_section=3143
 test_in=dir/A/A
-echo "Command: ./plcs -t0 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err"
- ./plcs -t0 -n2 -p  This $test_in 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs -t0 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./rplcs -t0 -n2 -p  This $test_in 1>test$test_section.out 2>test$test_section.err
 EXIT=$?
 echo
 echo "OUTPUT:"
@@ -1273,8 +1273,8 @@ echo "Expect:  recursive directory search -t0 is set"
 
 test_section=321
 test_in=dir
-echo "Command: ./plcs -t0 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err"
- ./plcs -t0 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs -t0 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./rplcs -t0 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err
 
 EXIT=$?
 echo
@@ -1298,8 +1298,8 @@ echo "Expect:  printing disorder"
 
 test_section=321
 test_in=dir
-echo "Command: ./plcs -t2 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err"
- ./plcs -t2 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs -t2 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./rplcs -t2 -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err
 
 EXIT=$?
 echo
@@ -1323,8 +1323,8 @@ echo "Expect:  printing more disordered, hopefully"
 
 test_section=323
 test_in=dir
-echo "Command: ./plcs -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err"
- ./plcs -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./rplcs -n2 -p This $test_in 1>test$test_section.out 2>test$test_section.err
 
 EXIT=$?
 echo
@@ -1351,8 +1351,8 @@ test_section=324
 test_in1=dir
 test_in2=dir2
 test_in3=dir
-echo "Command: ./plcs -n2 -p This $test_in1 $test_in2 $test_in3 1>test$test_section.out 2>test$test_section.err"
- ./plcs -n2 -p This $test_in1 $test_in2 $test_in3 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs -n2 -p This $test_in1 $test_in2 $test_in3 1>test$test_section.out 2>test$test_section.err"
+ ./rplcs -n2 -p This $test_in1 $test_in2 $test_in3 1>test$test_section.out 2>test$test_section.err
 
 EXIT=$?
 echo
@@ -1380,8 +1380,8 @@ test_section=324
 test_in1=dir
 test_in2=dir2
 test_in3=dir
-echo "Command: ./plcs -n2 -p -t-2 -t-1 This $test_in1 $test_in2 $test_in3 1>test$test_section.out 2>test$test_section.err"
- ./plcs -n2 -p -t-2 -t-1 This $test_in1 $test_in2 $test_in3 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs -n2 -p -t-2 -t-1 This $test_in1 $test_in2 $test_in3 1>test$test_section.out 2>test$test_section.err"
+ ./rplcs -n2 -p -t-2 -t-1 This $test_in1 $test_in2 $test_in3 1>test$test_section.out 2>test$test_section.err
 
 EXIT=$?
 echo
@@ -1415,8 +1415,8 @@ echo "purpose: Report any error"
 
 test_section=331
 test_in=dir
-echo "Command: ./plcs  -n2 -p  This $test_in 1>test$test_section.out 2>test$test_section.err"
- ./plcs  -n2 -p  This $test_in 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs  -n2 -p  This $test_in 1>test$test_section.out 2>test$test_section.err"
+ ./rplcs  -n2 -p  This $test_in 1>test$test_section.out 2>test$test_section.err
 
 EXIT=$?
 echo
@@ -1439,8 +1439,8 @@ echo "purpose: Report any error"
 test_section=332
 test_in1=dir
 test_in2=junk
-echo "Command: ./plcs  -n2 -p -q  This $test_in1 $test_in2 1>test$test_section.out 2>test$test_section.err"
- ./plcs  -n2 -p  -q This $test_in1 $test_in2 1>test$test_section.out 2>test$test_section.err
+echo "Command: ./rplcs  -n2 -p -q  This $test_in1 $test_in2 1>test$test_section.out 2>test$test_section.err"
+ ./rplcs  -n2 -p  -q This $test_in1 $test_in2 1>test$test_section.out 2>test$test_section.err
 EXIT=$?
 echo
 echo "OUTPUT:"
@@ -1482,8 +1482,8 @@ in_file1=test$test_file1.in
 in_file2=test$test_file2.in
 in_file3=dir
 in_file4=dir2
-echo "COMMAND:./plcs -ipv -l50 -m3 -n7 -afq -d3 -t2 "e" - $in_file3 $in_file2 $in_file4 - <$in_file1 <$in_file1 >$out_file 2>$err_file"
-./plcs -ipv -l50 -m3 -n7 -afq -d3 -t2 "e" - $in_file3 $in_file2 $in_file4 - <$in_file1 <$in_file1 >$out_file 2>$err_file
+echo "COMMAND:./rplcs -ipv -l50 -m3 -n7 -afq -d3 -t2 "e" - $in_file3 $in_file2 $in_file4 - <$in_file1 <$in_file1 >$out_file 2>$err_file"
+./rplcs -ipv -l50 -m3 -n7 -afq -d3 -t2 "e" - $in_file3 $in_file2 $in_file4 - <$in_file1 <$in_file1 >$out_file 2>$err_file
 
 EXIT=$?
 
@@ -1508,8 +1508,8 @@ err_file=test$test_section.err
 in_file1=test$test_file1.in
 in_file2=dir/A/A/A
 in_file3=dir/A/A
-echo "COMMAND:./plcs -beipv -l50 -m8 -n7 -t6 "test" $in_file3 $in_file2 $in_file1  >$out_file 2>$err_file"
-./plcs -bepf -l50 -m8 -n7 -t6 "test" $in_file3 $in_file2 $in_file1 >$out_file 2>$err_file
+echo "COMMAND:./rplcs -beipv -l50 -m8 -n7 -t6 "test" $in_file3 $in_file2 $in_file1  >$out_file 2>$err_file"
+./rplcs -bepf -l50 -m8 -n7 -t6 "test" $in_file3 $in_file2 $in_file1 >$out_file 2>$err_file
 
 EXIT=$?
 
@@ -1528,6 +1528,6 @@ echo "---------------------------------------------------"
 make clean
 rm *.err
 rm *.out
-#rm -rf dir
+rm -rf dir
 rm -rf dir2
 rm .test000.in

@@ -30,21 +30,13 @@ void search_given(char *given, search *mysearch) {
 		 * if -d is set to 0, do not process directory
 		 */
 		if (mysearch->max_dir_depth == 0) {
-			/*if -q is set */
-			if (!(mysearch->options_flags & NO_ERR_MSG)) {
-				fprintf(stderr,
-						"%s is detected to exceed the search limit %d\n", given,
-						mysearch->max_dir_depth);
-				if (mysearch->client_fd > 0)
-					send_err_line(mysearch,
-							"%s is detected to exceed the search limit %d",
-							given, mysearch->max_dir_depth);
-			} else {
-				/* update the search statistics */
-				pthread_mutex_lock(&(mysearch->lock));
-				(mysearch->statistics).err_quiet++;
-				pthread_mutex_unlock(&(mysearch->lock));
-			}
+			fprintf(stderr,
+					"%s is detected to exceed the search limit %d\n", given,
+					mysearch->max_dir_depth);
+			if (mysearch->client_fd > 0)
+				send_err_line(mysearch,
+						"%s is detected to exceed the search limit %d",
+						given, mysearch->max_dir_depth);
 			return;
 		} else {
 			/*allocate space to a history stack*/

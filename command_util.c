@@ -131,7 +131,10 @@ void scan_opt_search(int argc, char *argv[], search *mysearch) {
 					"-d5: the recursive descent depth into directories is limited to 5\n");
 			printf(
 					"-t3: to limit to 3 threads when processing sub directories\n");
-			exit(0);
+			if (state == -1)
+				exit(EXIT_FAILURE);
+			else
+				exit(0);
 		case 'b': /* turn match at begin on */
 			mysearch->options_flags |= AT_BEGIN;
 			break;
@@ -159,10 +162,12 @@ void scan_opt_search(int argc, char *argv[], search *mysearch) {
 		case 'l': /* set buffer size */
 			monitor_state = scan_switch_number(c, &mysearch->line_buffer_size);
 			if (mysearch->line_buffer_size
-					<= 0|| mysearch->line_buffer_size >= MAX_LINE_BUFFER) {fprintf(stderr, "Illegal numeric value \"%d\" for switch -l\n",
-							mysearch->line_buffer_size);
-					mysearch->line_buffer_size = DEFAULT_LINE_BUFFER;
-					state = -1;
+					<= 0|| mysearch->line_buffer_size >= MAX_LINE_BUFFER)
+			{
+				fprintf(stderr, "Illegal numeric value \"%d\" for switch -l\n",
+						mysearch->line_buffer_size);
+				mysearch->line_buffer_size = DEFAULT_LINE_BUFFER;
+				state = -1;
 			} else if (monitor_state == -1) {
 				state = -1;
 				monitor_state = 0;
@@ -170,7 +175,7 @@ void scan_opt_search(int argc, char *argv[], search *mysearch) {
 			break;
 		case 'm': /* set maximum lines to be processed */
 			monitor_state = scan_switch_number(c, &mysearch->max_line_number);
-			if (mysearch->max_line_number <= 0) {
+			if (monitor_state==0 && mysearch->max_line_number <= 0) {
 				fprintf(stderr, "Illegal numeric value \"%d\" for switch -m\n",
 						mysearch->max_line_number);
 				mysearch->max_line_number = -1;
@@ -183,7 +188,7 @@ void scan_opt_search(int argc, char *argv[], search *mysearch) {
 			break;
 		case 'n': /* set column number to print line number */
 			monitor_state = scan_switch_number(c, &mysearch->column_number);
-			if (mysearch->column_number >= MAX_COLS || mysearch->column_number <= 0) {
+			if (monitor_state==0 && (mysearch->column_number >= MAX_COLS || mysearch->column_number <= 0)) {
 				fprintf(stderr, "Illegal numeric value \"%d\" for switch -n\n",
 						mysearch->column_number);
 				mysearch->column_number = -1;
@@ -196,8 +201,8 @@ void scan_opt_search(int argc, char *argv[], search *mysearch) {
 			break;
 		case 't': /* set the line depth */
 			monitor_state = scan_switch_number(c, &mysearch->thread_limits);
-			if (mysearch->thread_limits < 0) {
-				fprintf(stderr, "Illegal numeric value \"%d\" for switch -d\n",
+			if (monitor_state==0 && mysearch->thread_limits < 0) {
+				fprintf(stderr, "Illegal numeric value \"%d\" for switch -t\n",
 						mysearch->thread_limits);
 				mysearch->thread_limits = -1;
 				state = -1;
@@ -209,8 +214,8 @@ void scan_opt_search(int argc, char *argv[], search *mysearch) {
 			break;
 		case 'd': /* set column number to print line number */
 			monitor_state = scan_switch_number(c, &mysearch->max_dir_depth);
-			if (mysearch->max_dir_depth < 0) {
-				fprintf(stderr, "Illegal numeric value \"%d\" for switch -n\n",
+			if (monitor_state==0 && mysearch->max_dir_depth < 0) {
+				fprintf(stderr, "Illegal numeric value \"%d\" for switch -d\n",
 						mysearch->max_dir_depth);
 				mysearch->max_dir_depth = -1;
 				state = -1;
