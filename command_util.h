@@ -60,7 +60,9 @@
 #define MAX_TCP_ERR MAX_TCP_STD
 #define RIGHT_JUST 55
 
+#ifndef MAX
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
+#endif
 
 typedef struct Message_Six {
 	unsigned int link_ignored; /*total link ignored*/
@@ -129,6 +131,7 @@ typedef struct NODE {
 	int depth;
 	stack *stk;
 	Statistics statistics; /* statistics to report */
+	char *full_path;
 } Node;
 
 /*
@@ -191,5 +194,10 @@ void update_statistics_sock(Statistics *root, Statistics *node);
 void trans_stat2send(Statistics *st);
 /*convert from network endian to achitecture endian*/
 void trans_stat2recv(Statistics *st);
+/*
+ * get the full path from the realpath and d_name
+ */
+char* get_fullpath(char* rpath, char *fname, int flag);
+
 
 #endif /* COMMAND_UTIL_H_ */

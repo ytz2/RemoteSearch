@@ -468,3 +468,33 @@ void trans_stat2recv(Statistics *st) {
 	st->thread_not_created = ntohl(st->thread_not_created);
 	st->max_alive = ntohl(st->max_alive);
 }
+
+/*
+ * get the full path from the realpath and d_name
+ */
+char* get_fullpath(char* rpath, char *fname, int flag) {
+	/*
+	 * basic string operations
+	 * give a buffer, copy the realpath
+	 * realpath+'/'+filename=full_path
+	 */
+	char *fullpath;
+	int name_max;
+	int len;
+	len = strlen(rpath);
+	name_max = pathconf(rpath, _PC_NAME_MAX);
+	if (name_max <= 0)
+		name_max = 4096; /* arbitrarily large */
+	/* rapth+/+name_max+'/0'=strlen(rapth)+name_max+2, for safety+5*/
+	if ((fullpath = malloc(len + name_max + 5)) == NULL) {
+		if (flag != 0)
+			perror("malloc()");
+		return NULL;
+	}
+	strncpy(fullpath, rpath, len);
+	fullpath[len] = '/';
+	fullpath[++len] = '\0';
+	strcat(fullpath, fname);
+	return fullpath;
+}
+

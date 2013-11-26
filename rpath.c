@@ -71,7 +71,7 @@ char* get_realpath(char* filename, char **memptr, Node *current) {
 		if (current == NULL
 				|| (current != NULL && !(mysearch->options_flags & NO_ERR_MSG))) {
 			fprintf(stderr, "malloc(): %s %s\n", strerror(errno), filename);
-			send_err_line(mysearch, "malloc(): %s %s\n", strerror(errno),
+			send_err_line(mysearch, "malloc(): %s %s\n", mystrerror(errno),
 					filename);
 		} else if (current && (mysearch->options_flags & NO_ERR_MSG)) {
 			(current->statistics).err_quiet++;

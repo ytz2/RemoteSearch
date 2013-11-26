@@ -25,6 +25,7 @@ pthread_key_t err_buffer_key;
 #ifdef __sun__
 pthread_once_t init_done= {PTHREAD_ONCE_INIT}; // once key
 #else
+pthread_key_t strerr_key; // key to bind a line buffer
 pthread_once_t init_done = PTHREAD_ONCE_INIT; // once key
 #endif
 

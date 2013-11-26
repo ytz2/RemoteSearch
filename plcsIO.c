@@ -58,6 +58,26 @@ int search_str(char* buffer, search *mysearch) {
 	return (options_flags & INVERSE_PRINT ? (!result) : result);
 }/*search_str*/
 
+
+char* mystrerror(int err)
+{
+	char *err_msg;
+#ifdef __sun__
+	err_msg=strerror(err);
+#else
+#define ERR_LENGTH 1024
+	pthread_once(&init_done, thread_init);
+	err_msg = pthread_getspecific(strerr_key);
+	/* allocate memory to buffer*/
+	if (err_msg == NULL) {
+		err_msg = (char*) malloc(ERR_LENGTH);
+		pthread_setspecific(strerr_key, err_msg);
+	}
+	strerror_r(err,err_msg,ERR_LENGTH-1);
+#endif
+	return err_msg;
+}
+
 /*
  * send the stderr msg to client side
  */
@@ -269,7 +289,7 @@ void search_file(char* filename, search *mysearch, Node *current) {
 				|| (current != NULL && !(mysearch->options_flags & NO_ERR_MSG))) {
 			perror(filename);
 			if (mysearch->client_fd > 0)
-				send_err_line(mysearch, "%s: %s", filename, strerror(errno));
+				send_err_line(mysearch, "%s: %s", filename, mystrerror(errno));
 		} else {
 			(current->statistics).err_quiet++;
 		}

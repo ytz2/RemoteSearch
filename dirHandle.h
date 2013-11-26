@@ -61,12 +61,8 @@ int stack_job_done(stack *st, Node *current);
 /*
  *  find the realpath which used to appear in the tree
  */
-Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath);
+Node* stack_find_history(stack *st, Node* current, Node *next);
 
-/*
- * get the full path from the realpath and d_name
- */
-char* get_fullpath(char* rpath, char *fname, int flag);
 
 /*
  * Walk through a dir from the current node

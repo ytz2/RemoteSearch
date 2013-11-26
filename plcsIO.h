@@ -81,4 +81,6 @@ void build_shifttable(search *mysearch);
  */
 void send_err_line(search *mysearch,char *format,...);
 
+/* thread_safe strerror to work with sun os */
+char* mystrerror(int err);
 #endif /* PLCSIO_H_ */

@@ -66,12 +66,12 @@ void client(remote *rmt, search *mysearch) {
 		pthread_exit(NULL);
 	/* we are now successfully connected to a remote server */
 	/* send the first message */
-    iptr = (struct sockaddr_in *)&server;
-     if (inet_ntop(iptr->sin_family, &iptr->sin_addr, text_buf, TEXT_SIZE)
-                                                             == NULL) {
-             perror("inet_ntop server");
-             pthread_exit(NULL);
-     }
+	iptr = (struct sockaddr_in *)&server;
+	if (inet_ntop(iptr->sin_family, &iptr->sin_addr, text_buf, TEXT_SIZE)
+			== NULL) {
+		perror("inet_ntop server");
+		pthread_exit(NULL);
+	}
 	if (our_send_message(fd, OPTION_PARAMETER, sizeof(msg_one), &msg1)
 			!= 0) {
 		fprintf(stderr, "Fail to send options parameters\n");

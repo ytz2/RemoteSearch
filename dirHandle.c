@@ -15,13 +15,13 @@
 Node* make_node(char *dname, int depth, stack *stk) {
 	Node* temp;
 	DIR *dir;
-	char* rptr, *memptr;
+	char* rptr, *memptr,*full;
 	search *mysearch;
 	mysearch = stk->mysearch;
 	errno = 0;
 	rptr = NULL;
 	memptr = NULL;
-
+	full=dname;
 	/* give space to a node */
 	if ((temp = (Node*) malloc(sizeof(Node))) == NULL) {
 		perror("malloc()");
@@ -35,35 +35,37 @@ Node* make_node(char *dname, int depth, stack *stk) {
 	temp->stk = stk;
 	memset(&temp->statistics, 0, sizeof(Statistics));
 
-	/* use full path name to get real path */
-	if ((rptr = get_realpath(dname, &memptr, temp)) == NULL) {
-		/* error report has been done within get_realpath */
-		if (memptr) {
-			free(memptr);
-			free(temp);
-		}
-		return NULL;
-	}
+
 
 	/* open the direcotry with full path */
-	if ((dir = opendir(rptr)) == NULL) {
+	if ((dir = opendir(full)) == NULL) {
 		if (!(stk->mysearch->options_flags & NO_ERR_MSG)) {
 			/* if -q is not set */
-			perror(rptr);
+			perror(full);
 			if (mysearch->client_fd > 0)
-				send_err_line(mysearch, "%s: %s", rptr, strerror(errno));
+				send_err_line(mysearch, "%s: %s", full, mystrerror(errno));
 		} else {
 			/* since it will be deleted, we directly update to mysearch*/
 			pthread_mutex_lock(&(mysearch->lock));
 			(mysearch->statistics).err_quiet++;
 			pthread_mutex_unlock(&(mysearch->lock));
 		}
-		free(memptr);
 		free(temp);
 		return NULL;
 	}
 
+	/* use full path name to get real path */
+	if ((rptr = get_realpath(full, &memptr, temp)) == NULL) {
+		/* error report has been done within get_realpath */
+		if (memptr) {
+			free(memptr);
+			free(temp);
+			closedir(dir);
+		}
+		return NULL;
+	}
 	/* initialize the node */
+	temp->full_path=dname; /*setup the full path */
 	temp->counter = 1; // set to 1 at the first time to be made
 	temp->dir = dir; // the dir object about the path
 	temp->path = memptr; // realpath of the dir
@@ -82,6 +84,8 @@ void clear_node(Node* node) {
 		closedir(node->dir);
 	if (node->path)
 		free(node->path);
+	if (node->full_path)
+		free(node->full_path);
 	free(node);
 }
 /*/
@@ -136,7 +140,7 @@ int stack_push(stack *st, Node *current, Node *next) {
 		return -1;
 
 	if ((err = pthread_rwlock_wrlock(&st->s_lock)) != 0) {
-		fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
+		perror("rwlock");
 		return err;
 	}
 
@@ -154,7 +158,7 @@ int stack_push(stack *st, Node *current, Node *next) {
 	}
 
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
-		fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
+		perror("rwlock");
 		return err;
 	}
 	return 0;
@@ -168,7 +172,7 @@ int stack_job_done(stack *st, Node *current) {
 	Node *temp, *tofree;
 	temp = current;
 	if ((err = pthread_rwlock_wrlock(&st->s_lock)) != 0) {
-		fprintf(stderr, "rwlock_wrlock: %s\n", strerror(err));
+		perror("rwlock");
 		return err;
 	}
 	// decrement the leaf counter
@@ -198,7 +202,7 @@ int stack_job_done(stack *st, Node *current) {
 	}
 
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
-		fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
+		perror("rwlock");
 		return err;
 	}
 	if (temp == NULL)
@@ -222,13 +226,19 @@ int stack_job_done(stack *st, Node *current) {
 /*
  *  find the realpath which used to appear in the tree
  */
-Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
+Node* stack_find_history(stack *st, Node* current, Node *next) {
 	int err;
 	Node *temp, *iter;
 	search *mysearch;
+	char *path,*fullpath;
+	int depth;
+	path=next->path;
+	fullpath=next->full_path;
 	mysearch = st->mysearch;
+	depth=next->depth;
+
 	if ((err = pthread_rwlock_rdlock(&st->s_lock)) != 0) {
-		fprintf(stderr, "rwlock_rdlock: %s\n", strerror(err));
+		perror("rwlock");
 		return NULL;
 	}
 
@@ -241,11 +251,17 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 	if (temp != NULL) {
 		{
 			if (!(mysearch->options_flags & NO_ERR_MSG)) {
-				fprintf(stderr, "%d depth: %s detect a loop\n",
-						current->depth + 1, fullpath);
-				if (mysearch->client_fd > 0)
-					send_err_line(mysearch, "%d depth: %s detect a loop",
-							current->depth + 1, fullpath);
+				fprintf(stderr, "Loop at level %d due to %s\n",
+						depth, fullpath);
+				fprintf(stderr, "%*clevel %d: %s\n", 3*depth, ' ',depth,
+						path);
+				if (mysearch->client_fd > 0){
+					send_err_line(mysearch, "Loop at level %d due to %s",
+							depth, fullpath);
+					send_err_line(mysearch, "%*clevel %d: %s", 3*depth, ' ',depth,
+							path);
+				}
+
 			} else
 				(current->statistics).err_quiet++;
 			/* update the avoided loop directory */
@@ -257,11 +273,11 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 		 */
 		for (iter = current; iter != temp->prev; iter = iter->prev) {
 			if (!(mysearch->options_flags & NO_ERR_MSG)) {
-				fprintf(stderr, "%*c%d depth: %s\n", 3 * iter->depth, ' ',
-						iter->depth, iter->path);
+				fprintf(stderr, "%*clevel %d: %s\n", 3 * depth, ' ',iter->depth,
+						iter->path);
 				if (mysearch->client_fd > 0)
-					send_err_line(mysearch, "%*c%d depth: %s", 3 * iter->depth,
-							' ', iter->depth, iter->path);
+					send_err_line(mysearch, "%*clevel %d: %s", 3 * depth, ' ',iter->depth,
+							iter->path);
 				fflush(stderr);
 			} else {
 				(current->statistics).err_quiet++;
@@ -269,40 +285,12 @@ Node* stack_find_history(stack *st, Node* current, char *path, char *fullpath) {
 		}
 	}
 	if ((err = pthread_rwlock_unlock(&st->s_lock)) != 0) {
-		fprintf(stderr, "rwlock_unlock: %s\n", strerror(err));
+		perror("rwlock");
 		return NULL;
 	}
 	return temp;
 }
 
-/*
- * get the full path from the realpath and d_name
- */
-char* get_fullpath(char* rpath, char *fname, int flag) {
-	/*
-	 * basic string operations
-	 * give a buffer, copy the realpath
-	 * realpath+'/'+filename=full_path
-	 */
-	char *fullpath;
-	int name_max;
-	int len;
-	len = strlen(rpath);
-	name_max = pathconf(rpath, _PC_NAME_MAX);
-	if (name_max <= 0)
-		name_max = 4096; /* arbitrarily large */
-	/* rapth+/+name_max+'/0'=strlen(rapth)+name_max+2, for safety+5*/
-	if ((fullpath = malloc(len + name_max + 5)) == NULL) {
-		if (flag != 0)
-			perror("malloc()");
-		return NULL;
-	}
-	strncpy(fullpath, rpath, len);
-	fullpath[len] = '/';
-	fullpath[++len] = '\0';
-	strcat(fullpath, fname);
-	return fullpath;
-}
 
 /*
  * test if the symlink pointing to a dir
@@ -321,7 +309,7 @@ int is_sym_dir(char* full_name, search *mysearch, Node *current) {
 		if (!(mysearch->options_flags & NO_ERR_MSG)) {
 			perror(full_name);
 			if (mysearch->client_fd > 0)
-				send_err_line(mysearch, "%s:%s", full_name, strerror(errno));
+				send_err_line(mysearch, "%s:%s", full_name, mystrerror(errno));
 		} else {
 			(current->statistics).err_quiet++;
 		}
@@ -356,11 +344,13 @@ int walk_recur(Node* current) {
 	depth = current->depth;
 	stk = current->stk;
 	dir = current->dir;
-	current_path = current->path;
+	current_path = current->path; // this is the real path
 	options_flags = stk->mysearch->options_flags;
 	mysearch = stk->mysearch;
 	/* update the depth for statistics directory */
 	(current->statistics).max_depth = current->depth;
+
+	/* use the realpath to get the max name_max */
 	name_max = pathconf(current_path, _PC_NAME_MAX);
 	if (name_max <= 0)
 		name_max = 4096; /* arbitrarily large */
@@ -378,7 +368,7 @@ int walk_recur(Node* current) {
 				perror("readdir_r");
 				if (mysearch->client_fd > 0)
 					send_err_line(mysearch, "%s: %s", "readdir_r",
-							strerror(errno));
+							mystrerror(errno));
 			} else {
 				(current->statistics).err_quiet++;
 			}
@@ -403,10 +393,7 @@ int walk_recur(Node* current) {
 				(current->statistics).dot_caught++;
 		}
 
-		/* generate the full path of subdirectory or files
-		 * hmmm don't forget to free full_path when any condition
-		 * cause to neglect one step
-		 */
+		/* get the fullpath of the file/directory*/
 		full_path = get_fullpath(current_path, result->d_name,
 				!(options_flags & NO_ERR_MSG));
 
@@ -416,7 +403,7 @@ int walk_recur(Node* current) {
 				perror(full_path);
 				if (mysearch->client_fd > 0)
 					send_err_line(mysearch, "%s: %s", full_path,
-							strerror(errno));
+							mystrerror(errno));
 			} else {
 				(current->statistics).err_quiet++;
 			}
@@ -482,25 +469,26 @@ int walk_recur(Node* current) {
 			/* update the opened directory */
 			(current->statistics).dir_opened++;
 			/* check if it used to appear in the history stack*/
-			if ((prev = stack_find_history(stk, current, next->path, full_path))
+			if ((prev = stack_find_history(stk, current, next))
 					!= NULL) {
 				clear_node(next);
-				free(full_path);
+				//free(full_path);
 				continue;
 			}
 			/* push the next node to the stack on the top of current node*/
 			if ((err = stack_push(stk, current, next)) != 0) {
 				clear_node(next);
-				free(full_path);
+				//free(full_path);
 				continue;
 			}
 
 			/* recursively search */
 			walk_to_next(next);
-			free(full_path);
+			//free(full_path);
 			fflush(stderr);
 			continue;
 		}
+		/*now it is the file */
 		search_file(full_path, mysearch, current);
 		free(full_path);
 		fflush(stderr);

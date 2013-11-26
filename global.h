@@ -13,6 +13,9 @@
 extern pthread_key_t line_buffer_key; // key to bind a line buffer
 extern pthread_key_t out_buffer_key; // key to bind a line buffer
 extern pthread_key_t err_buffer_key; // key to bind a line buffer
+#ifndef __sun__
+extern pthread_key_t strerr_key; // key to bind a line buffer
+#endif
 extern pthread_once_t init_done; // once key
 
 
